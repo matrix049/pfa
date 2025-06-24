@@ -1,0 +1,34 @@
+from django.contrib import admin
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+from . import views
+from django.contrib.auth import views as auth_views
+
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('properties/', views.properties, name='properties'),
+    path('property/<int:pk>/', views.property_detail, name='property_detail'),
+    path('dashboard/', views.dashboard, name='dashboard'),
+    path('login/', auth_views.LoginView.as_view(), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
+    path('register/', views.register, name='register'),
+    path('property/<int:pk>/book/', views.create_booking, name='create_booking'),
+    path('booking/<int:pk>/cancel/', views.cancel_booking, name='cancel_booking'),
+    path('property/create/', views.create_listing, name='create_listing'),
+    path('property/<int:pk>/edit/', views.edit_listing, name='edit_listing'),
+    path('property/<int:pk>/delete/', views.delete_listing, name='delete_listing'),
+    path('property/<int:pk>/bookings/', views.property_bookings, name='property_bookings'),
+    path('review/<int:pk>/edit/', views.edit_review, name='edit_review'),
+    path('review/<int:pk>/delete/', views.delete_review, name='delete_review'),
+    path('profile/edit/', views.edit_profile, name='edit_profile'),
+    path('password/change/', views.change_password, name='change_password'),
+    path('become-host/', views.become_host, name='become_host'),
+    path('create-listing/', views.create_listing, name='create_listing'),
+    path('terms/', views.terms, name='terms'),
+    path('privacy/', views.privacy, name='privacy'),
+    path('posts/create/', views.create_post, name='create_post'),
+    path('manage/posts/', views.manage_posts, name='manage_posts'),
+    path('manage/posts/<int:post_id>/approve/', views.approve_post, name='approve_post'),
+    path('manage/posts/<int:post_id>/decline/', views.decline_post, name='decline_post'),
+]

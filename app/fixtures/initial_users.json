@@ -1,0 +1,31 @@
+[
+    {
+        "model": "auth.user",
+        "pk": 1,
+        "fields": {
+            "password": "pbkdf2_sha256$720000$xvJ6xFzrWEDmxwGkqD9Qzt$4tJ3RxhWGdRQq3vxvG+GHcg6m/D6hBJz4dAM6+pyfOU=",
+            "last_login": "2024-01-15T10:00:00Z",
+            "is_superuser": false,
+            "username": "host_user",
+            "first_name": "Host",
+            "last_name": "User",
+            "email": "host@example.com",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2024-01-15T10:00:00Z",
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "app.userprofile",
+        "pk": 1,
+        "fields": {
+            "user": 1,
+            "role": "host",
+            "phone_number": "+1234567890",
+            "bio": "Experienced property host with multiple listings across Spain and Morocco.",
+            "date_joined": "2024-01-15T10:00:00Z"
+        }
+    }
+] 

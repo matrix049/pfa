@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}StayBooking - Find Your Perfect Stay{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section position-relative mb-5">
+    <div class="bg-light p-5 rounded-3">
+        <div class="container">
+            <h1 class="display-4 fw-bold">Find your next perfect stay</h1>
+            <p class="lead">Book unique homes and experiences across the world.</p>
+            
+            <!-- Search Form -->
+            <form action="{% url 'properties' %}" method="get" class="mt-4">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <input type="text" name="location" class="form-control form-control-lg" placeholder="Where are you going?">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="date" name="check_in" class="form-control form-control-lg" placeholder="Check-in">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="date" name="check_out" class="form-control form-control-lg" placeholder="Check-out">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary btn-lg w-100">Search</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Properties Section -->
+<section class="featured-properties mb-5">
+    <h2 class="mb-4">Featured Properties</h2>
+    <div class="row">
+        {% for property in featured_properties %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if property.primary_image %}
+                    <img src="{{ property.primary_image }}" class="card-img-top" alt="{{ property.title }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                    <img src="{% static 'images/default-avatar.svg' %}" class="card-img-top" alt="No image available" style="height: 200px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ property.title }}</h5>
+                    <p class="card-text text-muted">{{ property.location }}</p>
+                    <p class="card-text"><strong>${{ property.price }}</strong> / night</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="rating">
+                            <i class="fas fa-star text-warning"></i>
+                            <span>{{ property.rating }}</span>
+                        </div>
+                        <a href="{% url 'property_detail' property.id %}" class="btn btn-outline-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Popular Destinations -->
+<section class="popular-destinations mb-5">
+    <h2 class="mb-4">Popular Destinations</h2>
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card">
+                <img src="{% static 'images/paris.jpg' %}" class="card-img-top" alt="Paris">
+                <div class="card-body">
+                    <h5 class="card-title">Paris</h5>
+                    <p class="card-text">Explore the city of lights</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card">
+                <img src="{% static 'images/new-york.jpg' %}" class="card-img-top" alt="New York">
+                <div class="card-body">
+                    <h5 class="card-title">New York</h5>
+                    <p class="card-text">Experience the big apple</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card">
+                <img src="{% static 'images/tokyo.jpg' %}" class="card-img-top" alt="Tokyo">
+                <div class="card-body">
+                    <h5 class="card-title">Tokyo</h5>
+                    <p class="card-text">Discover Japanese culture</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card">
+                <img src="{% static 'images/dubai.jpg' %}" class="card-img-top" alt="Dubai">
+                <div class="card-body">
+                    <h5 class="card-title">Dubai</h5>
+                    <p class="card-text">Luxury in the desert</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="why-choose-us mb-5">
+    <h2 class="mb-4">Why Choose StayBooking</h2>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="text-center">
+                <i class="fas fa-shield-alt fa-3x mb-3 text-primary"></i>
+                <h4>Secure Booking</h4>
+                <p>Your safety and security is our top priority</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="text-center">
+                <i class="fas fa-hand-holding-usd fa-3x mb-3 text-primary"></i>
+                <h4>Best Price Guarantee</h4>
+                <p>Find the best deals for your stay</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="text-center">
+                <i class="fas fa-headset fa-3x mb-3 text-primary"></i>
+                <h4>24/7 Support</h4>
+                <p>We're here to help anytime you need us</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %} 

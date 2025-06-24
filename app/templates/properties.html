@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}Properties - StayBooking{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Filters Sidebar -->
+    <div class="col-md-3 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Filters</h5>
+                <form method="get">
+                    <!-- Price Range -->
+                    <div class="mb-4">
+                        <label class="form-label">Price Range</label>
+                        <div class="d-flex gap-2">
+                            <input type="number" name="min_price" class="form-control" placeholder="Min" value="{{ request.GET.min_price }}">
+                            <input type="number" name="max_price" class="form-control" placeholder="Max" value="{{ request.GET.max_price }}">
+                        </div>
+                    </div>
+
+                    <!-- Property Type -->
+                    <div class="mb-4">
+                        <label class="form-label">Property Type</label>
+                        <div class="form-check">
+                            <input type="checkbox" name="type" value="apartment" class="form-check-input" {% if 'apartment' in request.GET.type %}checked{% endif %}>
+                            <label class="form-check-label">Apartment</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" name="type" value="house" class="form-check-input" {% if 'house' in request.GET.type %}checked{% endif %}>
+                            <label class="form-check-label">House</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" name="type" value="villa" class="form-check-input" {% if 'villa' in request.GET.type %}checked{% endif %}>
+                            <label class="form-check-label">Villa</label>
+                        </div>
+                    </div>
+
+                    <!-- Amenities -->
+                    <div class="mb-4">
+                        <label class="form-label">Amenities</label>
+                        <div class="form-check">
+                            <input type="checkbox" name="amenities" value="wifi" class="form-check-input" {% if 'wifi' in request.GET.amenities %}checked{% endif %}>
+                            <label class="form-check-label">WiFi</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" name="amenities" value="pool" class="form-check-input" {% if 'pool' in request.GET.amenities %}checked{% endif %}>
+                            <label class="form-check-label">Pool</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" name="amenities" value="kitchen" class="form-check-input" {% if 'kitchen' in request.GET.amenities %}checked{% endif %}>
+                            <label class="form-check-label">Kitchen</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" name="amenities" value="parking" class="form-check-input" {% if 'parking' in request.GET.amenities %}checked{% endif %}>
+                            <label class="form-check-label">Parking</label>
+                        </div>
+                    </div>
+
+                    <!-- Bedrooms -->
+                    <div class="mb-4">
+                        <label class="form-label">Bedrooms</label>
+                        <select name="bedrooms" class="form-select">
+                            <option value="">Any</option>
+                            <option value="1" {% if request.GET.bedrooms == '1' %}selected{% endif %}>1</option>
+                            <option value="2" {% if request.GET.bedrooms == '2' %}selected{% endif %}>2</option>
+                            <option value="3" {% if request.GET.bedrooms == '3' %}selected{% endif %}>3</option>
+                            <option value="4+" {% if request.GET.bedrooms == '4+' %}selected{% endif %}>4+</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Property Listings -->
+    <div class="col-md-9">
+        <!-- Search Results Info -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">{{ properties|length }} Properties Found</h2>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    Sort by
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&sort=price_asc">Price: Low to High</a></li>
+                    <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&sort=price_desc">Price: High to Low</a></li>
+                    <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&sort=rating">Rating</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Property Cards -->
+        <div class="row">
+            {% for property in properties %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="position-relative">
+                        {% for image in property.images.all %}
+                            {% if image.is_primary %}
+                                <img src="{{ image.image.url }}" class="card-img-top" alt="{{ property.title }}" style="height: 200px; object-fit: cover;">
+                            {% endif %}
+                        {% endfor %}
+                        {% if property.is_superhost %}
+                        <span class="position-absolute top-0 start-0 badge bg-primary m-2">
+                            Superhost
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">{{ property.title }}</h5>
+                            <div class="rating">
+                                <i class="fas fa-star text-warning"></i>
+                                <span>{{ property.rating }}</span>
+                            </div>
+                        </div>
+                        <p class="card-text text-muted">{{ property.location }}</p>
+                        <p class="card-text">
+                            <i class="fas fa-bed me-2"></i>{{ property.bedrooms }} Bedrooms
+                            <i class="fas fa-bath ms-3 me-2"></i>{{ property.bathrooms }} Bathrooms
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="card-text mb-0">
+                                <strong>${{ property.price }}</strong> / night
+                            </p>
+                            <a href="{% url 'property_detail' property.id %}" class="btn btn-outline-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    No properties found matching your criteria. Try adjusting your filters.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if properties.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if properties.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ properties.previous_page_number }}&{{ request.GET.urlencode }}">&laquo;</a>
+                </li>
+                {% endif %}
+
+                {% for i in properties.paginator.page_range %}
+                <li class="page-item {% if properties.number == i %}active{% endif %}">
+                    <a class="page-link" href="?page={{ i }}&{{ request.GET.urlencode }}">{{ i }}</a>
+                </li>
+                {% endfor %}
+
+                {% if properties.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ properties.next_page_number }}&{{ request.GET.urlencode }}">&raquo;</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

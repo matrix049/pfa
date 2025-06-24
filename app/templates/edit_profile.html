@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Profile - StayBooking{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-primary text-white text-center rounded-top">
+                    <h3 class="mb-0"><i class="fas fa-user-edit me-2"></i>Edit Profile</h3>
+                </div>
+                <div class="card-body p-5">
+                    {% if messages %}
+                        <div class="mb-4">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Avatar Section -->
+                        <div class="text-center mb-4">
+                            <div class="position-relative d-inline-block avatar-upload">
+                                <img src="{{ user.userprofile.get_avatar_url }}"
+                                     alt="{{ user.get_full_name }}"
+                                     class="rounded-circle shadow avatar-preview"
+                                     style="width: 140px; height: 140px; object-fit: cover; border: 4px solid #fff;">
+                                <label for="{{ form.avatar.id_for_label }}"
+                                       class="position-absolute bottom-0 end-0 bg-white rounded-circle p-2 shadow avatar-upload-label"
+                                       style="cursor: pointer;">
+                                    <i class="fas fa-camera text-primary"></i>
+                                </label>
+                            </div>
+                            {{ form.avatar }}
+                            {% if form.avatar.errors %}
+                                <div class="invalid-feedback d-block">{{ form.avatar.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6 form-floating">
+                                {{ form.first_name }}
+                                <label for="{{ form.first_name.id_for_label }}">First Name</label>
+                                {% if form.first_name.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.first_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 form-floating">
+                                {{ form.last_name }}
+                                <label for="{{ form.last_name.id_for_label }}">Last Name</label>
+                                {% if form.last_name.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.last_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            {{ form.email }}
+                            <label for="{{ form.email.id_for_label }}">Email</label>
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">{{ form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            {{ form.phone_number }}
+                            <label for="{{ form.phone_number.id_for_label }}">Phone Number</label>
+                            {% if form.phone_number.errors %}
+                                <div class="invalid-feedback d-block">{{ form.phone_number.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            {{ form.bio }}
+                            <label for="{{ form.bio.id_for_label }}">Bio</label>
+                            {% if form.bio.errors %}
+                                <div class="invalid-feedback d-block">{{ form.bio.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Tell us a bit about yourself</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar-upload .avatar-upload-label {
+        transition: background 0.2s;
+    }
+    .avatar-upload .avatar-upload-label:hover {
+        background: #f0f0f0;
+    }
+    .avatar-preview {
+        box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        transition: box-shadow 0.2s;
+    }
+    .avatar-preview:hover {
+        box-shadow: 0 8px 32px rgba(0,0,0,0.16);
+    }
+    #id_avatar {
+        display: none;
+    }
+    .form-floating > .form-control:focus ~ label {
+        opacity: 1;
+        color: #FF5A5F;
+    }
+    .invalid-feedback {
+        font-size: 0.95rem;
+        color: #FF5A5F;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Preview avatar image before upload
+    const avatarInput = document.getElementById('{{ form.avatar.id_for_label }}');
+    const avatarPreview = document.querySelector('img.avatar-preview');
+    if (avatarInput) {
+        avatarInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    avatarPreview.src = e.target.result;
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    }
+});
+</script>
+{% endblock %} 

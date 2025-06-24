@@ -1,0 +1,198 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Become a Host - StayBooking</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS (optional) -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #FF5A5F;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        .step-item {
+            position: relative;
+        }
+        .step-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 60px;
+            height: calc(100% - 40px);
+            width: 2px;
+            background-color: #e9ecef;
+        }
+        .step-item.active .step-number {
+            background-color: #FF5A5F;
+        }
+        .form-control, .form-select {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+        }
+        .btn-lg {
+            padding: 1rem 2rem;
+            border-radius: 8px;
+        }
+        .invalid-feedback {
+            font-size: 0.875rem;
+            color: #FF5A5F;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Left side - Welcome/Start and Form -->
+        <div class="col-md-6 min-vh-100 d-flex align-items-center">
+            <div class="p-5 w-100">
+                <div id="host-welcome">
+                    <h1 class="display-4 mb-4">Commencer sur StayBooking, c'est facile</h1>
+                    <ul class="list-unstyled mb-5">
+                        <li class="mb-4">
+                            <strong>1. Parlez-nous de votre logement</strong><br>
+                            Donnez-nous quelques informations de base, par exemple où il se trouve et combien de voyageurs il peut accueillir.
+                        </li>
+                        <li class="mb-4">
+                            <strong>2. Faites en sorte de vous démarquer</strong><br>
+                            Ajoutez des documents, un titre et une description. Nous allons vous aider.
+                        </li>
+                        <li>
+                            <strong>3. Terminez et publiez</strong><br>
+                            Vérifiez quelques détails, puis soumettez votre demande.
+                        </li>
+                    </ul>
+                    <button id="start-host-form" class="btn btn-primary btn-lg px-5">Commencer</button>
+                </div>
+                <div id="host-form-section" style="display:none;">
+                    {% if messages %}
+                    <div class="mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="steps-container">
+                            <!-- Step 1: Business Information -->
+                            <div class="step-item active mb-5">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="step-number">1</div>
+                                    <h3 class="mb-0 ms-3">Business Information</h3>
+                                </div>
+                                <div class="ms-5 ps-2">
+                                    <div class="mb-3">
+                                        <label class="form-label">{{ form.business_name.label }}</label>
+                                        {{ form.business_name }}
+                                        {% if form.business_name.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.business_name.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">{{ form.business_address.label }}</label>
+                                        {{ form.business_address }}
+                                        {% if form.business_address.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.business_address.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">{{ form.business_phone.label }}</label>
+                                        {{ form.business_phone }}
+                                        {% if form.business_phone.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.business_phone.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Step 2: Documentation -->
+                            <div class="step-item mb-5">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="step-number">2</div>
+                                    <h3 class="mb-0 ms-3">Documentation</h3>
+                                </div>
+                                <div class="ms-5 ps-2">
+                                    <div class="mb-3">
+                                        <label class="form-label">{{ form.identity_document.label }}</label>
+                                        {{ form.identity_document }}
+                                        <div class="form-text">{{ form.identity_document.help_text }}</div>
+                                        {% if form.identity_document.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.identity_document.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Step 3: Description -->
+                            <div class="step-item">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="step-number">3</div>
+                                    <h3 class="mb-0 ms-3">Your Experience</h3>
+                                </div>
+                                <div class="ms-5 ps-2">
+                                    <div class="mb-3">
+                                        <label class="form-label">{{ form.description.label }}</label>
+                                        {{ form.description }}
+                                        <div class="form-text">{{ form.description.help_text }}</div>
+                                        {% if form.description.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-paper-plane me-2"></i>Envoyer à l'admin
+                            </button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-lg px-5 ms-2">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                        </div>
+                        <div class="form-text mt-3 text-muted">
+                            Votre demande sera examinée par un administrateur.
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Right side - Image -->
+        <div class="col-md-6 min-vh-100 bg-light d-none d-md-block">
+            <div class="h-100 d-flex align-items-center justify-content-center">
+                <img src="/media/madrid/becomehost.png" alt="Become a host" class="img-fluid" style="max-height: 400px;">
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startBtn = document.getElementById('start-host-form');
+    const welcome = document.getElementById('host-welcome');
+    const formSection = document.getElementById('host-form-section');
+    if (startBtn) {
+        startBtn.addEventListener('click', function() {
+            welcome.style.display = 'none';
+            formSection.style.display = 'block';
+        });
+    }
+});
+</script>
+</body>
+</html> 

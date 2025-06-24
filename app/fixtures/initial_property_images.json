@@ -1,0 +1,110 @@
+[
+    {
+        "model": "app.propertyimage",
+        "pk": 1,
+        "fields": {
+            "property": 1,
+            "image": "properties/madrid/7ae722ce-d842-4fc8-8088-d5b89a7d8cf3.avif",
+            "is_primary": true
+        }
+    },
+    {
+        "model": "app.propertyimage",
+        "pk": 2,
+        "fields": {
+            "property": 1,
+            "image": "properties/madrid/bc979d0f-1479-47ff-bec2-66c3c2be491d.avif",
+            "is_primary": false
+        }
+    },
+    {
+        "model": "app.propertyimage",
+        "pk": 3,
+        "fields": {
+            "property": 1,
+            "image": "properties/madrid/84ce3a4c-eaa3-4edf-811d-7533d3ce3de4.avif",
+            "is_primary": false
+        }
+    },
+    {
+        "model": "app.propertyimage",
+        "pk": 4,
+        "fields": {
+            "property": 2,
+            "image": "properties/barcelone/6ac75714-7662-49cf-9b03-dc7826de5b87.avif",
+            "is_primary": true
+        }
+    },
+    {
+        "model": "app.propertyimage",
+        "pk": 5,
+        "fields": {
+            "property": 2,
+            "image": "properties/barcelone/1bd52dfe-7e25-48f5-9ec8-71feb48848c3.avif",
+            "is_primary": false
+        }
+    },
+    {
+        "model": "app.propertyimage",
+        "pk": 6,
+        "fields": {
+            "property": 2,
+            "image": "properties/barcelone/7d316268-7c4e-491b-a1d7-f683b2f73301.avif",
+            "is_primary": false
+        }
+    },
+    {
+        "model": "app.propertyimage",
+        "pk": 7,
+        "fields": {
+            "property": 3,
+            "image": "properties/rabat/f1b2d387-8175-4e4f-afb0-7c7d1e4181ec.avif",
+            "is_primary": true
+        }
+    },
+    {
+        "model": "app.propertyimage",
+        "pk": 8,
+        "fields": {
+            "property": 3,
+            "image": "properties/rabat/805882df-c257-4e69-bd57-a599daba712a.avif",
+            "is_primary": false
+        }
+    },
+    {
+        "model": "app.propertyimage",
+        "pk": 9,
+        "fields": {
+            "property": 3,
+            "image": "properties/rabat/c6a14dff-ff1b-4833-9948-405943a7833c.avif",
+            "is_primary": false
+        }
+    },
+    {
+        "model": "app.propertyimage",
+        "pk": 10,
+        "fields": {
+            "property": 4,
+            "image": "properties/tanger/aea4c643-3d51-4915-9261-beebd98f8f28.avif",
+            "is_primary": true
+        }
+    },
+    {
+        "model": "app.propertyimage",
+        "pk": 11,
+        "fields": {
+            "property": 4,
+            "image": "properties/tanger/3b78cfb1-a86f-4cee-98a6-b4c4618ae534.avif",
+            "is_primary": false
+        }
+    },
+    {
+        "model": "app.propertyimage",
+        "pk": 12,
+        "fields": {
+            "property": 4,
+            "image": "properties/tanger/1afb6eb0-d31e-4788-be58-54c66872b60d.avif",
+            "is_primary": false
+        }
+    }
+] 

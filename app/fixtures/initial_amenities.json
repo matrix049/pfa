@@ -1,0 +1,92 @@
+[
+    {
+        "model": "app.amenity",
+        "pk": 1,
+        "fields": {
+            "name": "Wi-Fi",
+            "icon": "fas fa-wifi",
+            "properties": [1, 2, 3, 4]
+        }
+    },
+    {
+        "model": "app.amenity",
+        "pk": 2,
+        "fields": {
+            "name": "Air Conditioning",
+            "icon": "fas fa-snowflake",
+            "properties": [1, 2, 3, 4]
+        }
+    },
+    {
+        "model": "app.amenity",
+        "pk": 3,
+        "fields": {
+            "name": "Kitchen",
+            "icon": "fas fa-utensils",
+            "properties": [1, 2, 3, 4]
+        }
+    },
+    {
+        "model": "app.amenity",
+        "pk": 4,
+        "fields": {
+            "name": "Washing Machine",
+            "icon": "fas fa-tshirt",
+            "properties": [1, 2, 3, 4]
+        }
+    },
+    {
+        "model": "app.amenity",
+        "pk": 5,
+        "fields": {
+            "name": "TV",
+            "icon": "fas fa-tv",
+            "properties": [1, 2, 3, 4]
+        }
+    },
+    {
+        "model": "app.amenity",
+        "pk": 6,
+        "fields": {
+            "name": "Balcony",
+            "icon": "fas fa-door-open",
+            "properties": [1, 2, 3]
+        }
+    },
+    {
+        "model": "app.amenity",
+        "pk": 7,
+        "fields": {
+            "name": "Sea View",
+            "icon": "fas fa-water",
+            "properties": [4]
+        }
+    },
+    {
+        "model": "app.amenity",
+        "pk": 8,
+        "fields": {
+            "name": "Elevator",
+            "icon": "fas fa-arrow-up",
+            "properties": [1, 2]
+        }
+    },
+    {
+        "model": "app.amenity",
+        "pk": 9,
+        "fields": {
+            "name": "Parking",
+            "icon": "fas fa-parking",
+            "properties": [2, 3, 4]
+        }
+    },
+    {
+        "model": "app.amenity",
+        "pk": 10,
+        "fields": {
+            "name": "Pool Access",
+            "icon": "fas fa-swimming-pool",
+            "properties": [4]
+        }
+    }
+] 

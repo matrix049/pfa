@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ property.title }} - StayBooking{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Property Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-2">{{ property.title }}</h1>
+            <div class="d-flex align-items-center gap-3">
+                <div class="rating">
+                    <i class="fas fa-star text-warning"></i>
+                    <span>{{ property.rating }} ({{ property.reviews.count }} reviews)</span>
+                </div>
+                <span class="text-muted">·</span>
+                <span><i class="fas fa-map-marker-alt"></i> {{ property.location }}</span>
+                {% if property.is_superhost %}
+                <span class="badge bg-primary">Superhost</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Property Images -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div id="propertyCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for image in property.images.all %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="{{ image.image.url }}" class="d-block w-100" alt="Property Image" style="height: 400px; object-fit: cover;">
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#propertyCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#propertyCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Booking Card -->
+        <div class="col-md-4">
+            <div class="card sticky-top" style="top: 2rem;">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">${{ property.price }} <small class="text-muted">/ night</small></h5>
+                    <form action="{% url 'create_booking' property.id %}" method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Check-in</label>
+                            <input type="date" name="check_in" class="form-control" required min="{{ today|date:'Y-m-d' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Check-out</label>
+                            <input type="date" name="check_out" class="form-control" required min="{{ today|date:'Y-m-d' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Guests</label>
+                            <select name="guests" class="form-select" required>
+                                {% for i in "123456"|make_list %}
+                                <option value="{{ forloop.counter }}">{{ forloop.counter }} guest{{ forloop.counter|pluralize }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <p class="mb-2">Price Details:</p>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>${{ property.price }} × <span id="nights">0</span> nights</span>
+                                <span id="subtotal">$0</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Cleaning fee</span>
+                                <span>${{ property.cleaning_fee }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Service fee</span>
+                                <span>${{ property.service_fee }}</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between fw-bold">
+                                <span>Total</span>
+                                <span id="total">$0</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Reserve</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Property Details -->
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Host Info -->
+            <div class="mb-4">
+                <h4>Hosted by {{ property.host.name }}</h4>
+                <p class="text-muted">
+                    <i class="fas fa-home me-2"></i>{{ property.property_type }}
+                    <span class="mx-2">·</span>
+                    <i class="fas fa-bed me-2"></i>{{ property.bedrooms }} Bedrooms
+                    <span class="mx-2">·</span>
+                    <i class="fas fa-bath me-2"></i>{{ property.bathrooms }} Bathrooms
+                </p>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-4">
+                <h4>About this place</h4>
+                <p>{{ property.description }}</p>
+            </div>
+
+            <!-- Amenities -->
+            <div class="mb-4">
+                <h4>What this place offers</h4>
+                <div class="row">
+                    {% for amenity in property.amenities.all %}
+                    <div class="col-md-6 mb-2">
+                        <i class="{{ amenity.icon }} me-2"></i>{{ amenity.name }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Reviews -->
+            <div class="mb-4">
+                <h4>Reviews</h4>
+                {% for review in property.reviews.all %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ review.user.avatar.url }}" alt="{{ review.user.name }}" class="rounded-circle me-2" style="width: 40px; height: 40px;">
+                                <div>
+                                    <h6 class="mb-0">{{ review.user.name }}</h6>
+                                    <small class="text-muted">{{ review.created_at|date }}</small>
+                                </div>
+                            </div>
+                            <div class="rating">
+                                <i class="fas fa-star text-warning"></i>
+                                <span>{{ review.rating }}</span>
+                            </div>
+                        </div>
+                        <p class="mb-0">{{ review.comment }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p>No reviews yet.</p>
+                {% endfor %}
+            </div>
+
+            <!-- Location -->
+            <div class="mb-4">
+                <h4>Location</h4>
+                <p>{{ property.location_description }}</p>
+                <div id="map" style="height: 400px;" class="rounded"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Calculate total price based on dates
+    const checkInInput = document.querySelector('input[name="check_in"]');
+    const checkOutInput = document.querySelector('input[name="check_out"]');
+    const nightsElement = document.getElementById('nights');
+    const subtotalElement = document.getElementById('subtotal');
+    const totalElement = document.getElementById('total');
+    const pricePerNight = {{ property.price }};
+    const cleaningFee = {{ property.cleaning_fee }};
+    const serviceFee = {{ property.service_fee }};
+
+    function calculateTotal() {
+        if (checkInInput.value && checkOutInput.value) {
+            const checkIn = new Date(checkInInput.value);
+            const checkOut = new Date(checkOutInput.value);
+            const nights = Math.floor((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+            
+            if (nights > 0) {
+                const subtotal = nights * pricePerNight;
+                const total = subtotal + cleaningFee + serviceFee;
+                
+                nightsElement.textContent = nights;
+                subtotalElement.textContent = `$${subtotal}`;
+                totalElement.textContent = `$${total}`;
+            }
+        }
+    }
+
+    checkInInput.addEventListener('change', calculateTotal);
+    checkOutInput.addEventListener('change', calculateTotal);
+</script>
+
+<!-- Google Maps -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+<script>
+    function initMap() {
+        const location = { lat: {{ property.latitude }}, lng: {{ property.longitude }} };
+        const map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 15,
+            center: location,
+        });
+        new google.maps.Marker({
+            position: location,
+            map: map,
+        });
+    }
+</script>
+{% endblock %}
+{% endblock %} 

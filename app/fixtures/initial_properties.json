@@ -1,0 +1,86 @@
+[
+    {
+        "model": "app.property",
+        "pk": 1,
+        "fields": {
+            "host": 1,
+            "title": "Luxury Apartment in Madrid City Center",
+            "description": "Experience the heart of Madrid in this stunning modern apartment. Located in the prestigious Salamanca district, this elegant property offers a perfect blend of traditional Spanish architecture and contemporary comfort. Features include a spacious terrace with city views, high ceilings with original moldings, and a fully equipped gourmet kitchen. Walking distance to Retiro Park, world-class museums, and Madrid's finest restaurants.",
+            "property_type": "apartment",
+            "location": "Salamanca, Madrid, Spain",
+            "price_per_night": "150.00",
+            "bedrooms": 2,
+            "bathrooms": 2,
+            "max_guests": 4,
+            "cleaning_fee": "50.00",
+            "service_fee": "30.00",
+            "latitude": 40.4254,
+            "longitude": -3.6844,
+            "created_at": "2024-01-15T10:00:00Z",
+            "updated_at": "2024-01-15T10:00:00Z"
+        }
+    },
+    {
+        "model": "app.property",
+        "pk": 2,
+        "fields": {
+            "host": 1,
+            "title": "Stylish Eixample Apartment in Barcelona",
+            "description": "Discover Barcelona from this beautifully renovated apartment in the iconic Eixample district. This modernist gem features original Catalan hydraulic tiles, floor-to-ceiling windows, and a charming balcony overlooking the vibrant streets below. The apartment combines historic charm with modern amenities, including smart home features and designer furnishings. Steps away from Passeig de Gràcia and Gaudí's architectural masterpieces.",
+            "property_type": "apartment",
+            "location": "Eixample, Barcelona, Spain",
+            "price_per_night": "180.00",
+            "bedrooms": 2,
+            "bathrooms": 2,
+            "max_guests": 4,
+            "cleaning_fee": "60.00",
+            "service_fee": "35.00",
+            "latitude": 41.3851,
+            "longitude": 2.1734,
+            "created_at": "2024-01-15T11:00:00Z",
+            "updated_at": "2024-01-15T11:00:00Z"
+        }
+    },
+    {
+        "model": "app.property",
+        "pk": 3,
+        "fields": {
+            "host": 1,
+            "title": "Modern Apartment in Agdal, Rabat",
+            "description": "Welcome to this contemporary apartment in Rabat's upscale Agdal neighborhood. This bright and airy space offers modern Moroccan design elements, featuring a spacious living area with traditional zellige tilework and modern furnishings. The property includes a fully equipped kitchen, a private balcony perfect for morning coffee, and access to a rooftop terrace with panoramic city views. Close to diplomatic quarters, restaurants, and shopping areas.",
+            "property_type": "apartment",
+            "location": "Agdal, Rabat, Morocco",
+            "price_per_night": "120.00",
+            "bedrooms": 3,
+            "bathrooms": 2,
+            "max_guests": 6,
+            "cleaning_fee": "40.00",
+            "service_fee": "25.00",
+            "latitude": 34.0016,
+            "longitude": -6.8498,
+            "created_at": "2024-01-15T12:00:00Z",
+            "updated_at": "2024-01-15T12:00:00Z"
+        }
+    },
+    {
+        "model": "app.property",
+        "pk": 4,
+        "fields": {
+            "host": 1,
+            "title": "Sea View Apartment in Tangier Marina",
+            "description": "Experience the magic of Tangier in this luxurious marina-front apartment. Offering breathtaking views of the Mediterranean Sea and the Strait of Gibraltar, this modern property combines comfort with location. The apartment features contemporary Moroccan décor, floor-to-ceiling windows, and a private terrace perfect for watching stunning sunsets. Walking distance to the historic medina, cafes, and the famous Tangier beaches.",
+            "property_type": "apartment",
+            "location": "Marina Bay, Tangier, Morocco",
+            "price_per_night": "140.00",
+            "bedrooms": 2,
+            "bathrooms": 2,
+            "max_guests": 4,
+            "cleaning_fee": "45.00",
+            "service_fee": "30.00",
+            "latitude": 35.7861,
+            "longitude": -5.8098,
+            "created_at": "2024-01-15T13:00:00Z",
+            "updated_at": "2024-01-15T13:00:00Z"
+        }
+    }
+] 

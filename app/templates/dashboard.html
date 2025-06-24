@@ -1,0 +1,328 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - StayBooking{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <img src="{{ request.user.userprofile.avatar.url|default:'https://via.placeholder.com/150' }}" 
+                             alt="{{ request.user.get_full_name }}" 
+                             class="rounded-circle mb-3"
+                             style="width: 100px; height: 100px; object-fit: cover;">
+                        <h5 class="mb-0">{{ request.user.get_full_name }}</h5>
+                        <p class="text-muted">
+                            {% if user_role == 'admin' %}
+                                Administrator
+                            {% elif user_role == 'host' %}
+                                Host
+                            {% elif user_role == 'pending_host' %}
+                                Pending Host
+                            {% else %}
+                                Regular User
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="list-group">
+                        <a href="#bookings" class="list-group-item list-group-item-action active" data-bs-toggle="list">
+                            <i class="fas fa-calendar me-2"></i>My Bookings
+                        </a>
+                        <a href="#reviews" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                            <i class="fas fa-star me-2"></i>My Reviews
+                        </a>
+                        {% if user_role == 'host' or user_role == 'admin' %}
+                        <a href="#properties" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                            <i class="fas fa-home me-2"></i>My Properties
+                        </a>
+                        {% endif %}
+                        {% if user_role == 'admin' %}
+                        <a href="#applications" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                            <i class="fas fa-user-check me-2"></i>Host Applications
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'edit_profile' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-edit me-2"></i>Edit Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {% if user_role == 'user' %}
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5>Want to become a host?</h5>
+                    <p class="text-muted">Share your space and earn extra income</p>
+                    <a href="{% url 'become_host' %}" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>Become a Host
+                    </a>
+                </div>
+            </div>
+            {% elif user_role == 'pending_host' and host_application %}
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Application Status</h5>
+                    <p class="mb-2">
+                        <strong>Status:</strong> 
+                        <span class="badge bg-warning">Pending Review</span>
+                    </p>
+                    <p class="mb-2">
+                        <strong>Submitted:</strong><br>
+                        {{ host_application.created_at|date:"M d, Y" }}
+                    </p>
+                    <p class="text-muted small">We'll notify you once your application is reviewed.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="tab-content">
+                <!-- Bookings Tab -->
+                <div class="tab-pane fade show active" id="bookings">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3>My Bookings</h3>
+                    </div>
+                    {% if bookings %}
+                    <div class="row">
+                        {% for booking in bookings %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ booking.property.title }}</h5>
+                                    <p class="text-muted mb-2">
+                                        <i class="fas fa-map-marker-alt me-2"></i>{{ booking.property.location }}
+                                    </p>
+                                    <div class="mb-3">
+                                        <span class="badge {% if booking.status == 'confirmed' %}bg-success{% elif booking.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ booking.status|title }}
+                                        </span>
+                                    </div>
+                                    <p class="mb-1"><strong>Check-in:</strong> {{ booking.check_in|date:"M d, Y" }}</p>
+                                    <p class="mb-1"><strong>Check-out:</strong> {{ booking.check_out|date:"M d, Y" }}</p>
+                                    <p class="mb-1"><strong>Guests:</strong> {{ booking.guests }}</p>
+                                    <p class="mb-0"><strong>Total:</strong> ${{ booking.total_price }}</p>
+                                </div>
+                                {% if booking.status == 'pending' or booking.status == 'confirmed' %}
+                                <div class="card-footer bg-transparent">
+                                    <form method="post" action="{% url 'cancel_booking' booking.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-times me-2"></i>Cancel Booking
+                                        </button>
+                                    </form>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>You don't have any bookings yet.
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Reviews Tab -->
+                <div class="tab-pane fade" id="reviews">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3>My Reviews</h3>
+                    </div>
+                    {% if reviews %}
+                    <div class="row">
+                        {% for review in reviews %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ review.property.title }}</h5>
+                                    <div class="mb-2">
+                                        {% for i in "12345" %}
+                                        <i class="fas fa-star {% if forloop.counter <= review.rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                        {% endfor %}
+                                    </div>
+                                    <p class="card-text">{{ review.comment }}</p>
+                                    <p class="text-muted small mb-0">Posted on {{ review.created_at|date:"M d, Y" }}</p>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <a href="{% url 'edit_review' review.pk %}" class="btn btn-outline-primary btn-sm me-2">
+                                        <i class="fas fa-edit me-2"></i>Edit
+                                    </a>
+                                    <form method="post" action="{% url 'delete_review' review.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-trash me-2"></i>Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>You haven't written any reviews yet.
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Properties Tab (Host/Admin Only) -->
+                {% if user_role == 'host' or user_role == 'admin' %}
+                <div class="tab-pane fade" id="properties">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3>My Properties</h3>
+                        <a href="{% url 'create_listing' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add New Property
+                        </a>
+                    </div>
+                    {% if managed_properties %}
+                    <div class="row">
+                        {% for property in managed_properties %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-sm h-100">
+                                {% if property.images.exists %}
+                                <img src="{{ property.images.first.image.url }}" class="card-img-top" alt="{{ property.title }}" style="height: 200px; object-fit: cover;">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ property.title }}</h5>
+                                    <p class="text-muted mb-2">
+                                        <i class="fas fa-map-marker-alt me-2"></i>{{ property.location }}
+                                    </p>
+                                    <p class="mb-1"><strong>Type:</strong> {{ property.get_property_type_display }}</p>
+                                    <p class="mb-1"><strong>Price:</strong> ${{ property.price_per_night }}/night</p>
+                                    <p class="mb-0"><strong>Max Guests:</strong> {{ property.max_guests }}</p>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <a href="{% url 'edit_listing' property.pk %}" class="btn btn-outline-primary btn-sm me-2">
+                                        <i class="fas fa-edit me-2"></i>Edit
+                                    </a>
+                                    <a href="{% url 'property_bookings' property.pk %}" class="btn btn-outline-info btn-sm me-2">
+                                        <i class="fas fa-calendar me-2"></i>Bookings
+                                    </a>
+                                    <form method="post" action="{% url 'delete_listing' property.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-trash me-2"></i>Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>You haven't listed any properties yet.
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Host Applications Tab (Admin Only) -->
+                {% if user_role == 'admin' %}
+                <div class="tab-pane fade" id="applications">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3>Pending Host Applications</h3>
+                    </div>
+                    {% if pending_applications %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Applicant</th>
+                                    <th>Business Name</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in pending_applications %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="{{ application.user.userprofile.avatar.url|default:'https://via.placeholder.com/40' }}" 
+                                                 alt="{{ application.user.get_full_name }}" 
+                                                 class="rounded-circle me-2"
+                                                 style="width: 40px; height: 40px; object-fit: cover;">
+                                            <div>
+                                                <div>{{ application.user.get_full_name }}</div>
+                                                <small class="text-muted">{{ application.user.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ application.business_name }}</td>
+                                    <td>{{ application.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <form method="post" action="{% url 'admin:app_hostapplication_changelist' %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="approve_applications">
+                                            <input type="hidden" name="_selected_action" value="{{ application.pk }}">
+                                            <button type="submit" class="btn btn-success btn-sm me-2">
+                                                <i class="fas fa-check me-2"></i>Approve
+                                            </button>
+                                        </form>
+                                        <form method="post" action="{% url 'admin:app_hostapplication_changelist' %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="reject_applications">
+                                            <input type="hidden" name="_selected_action" value="{{ application.pk }}">
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-times me-2"></i>Reject
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>No pending host applications.
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .list-group-item {
+        border: none;
+        border-radius: 8px !important;
+        margin-bottom: 5px;
+    }
+    
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .list-group-item.active {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+    
+    .card {
+        border: none;
+        border-radius: 12px;
+    }
+    
+    .btn {
+        border-radius: 8px;
+    }
+    
+    .badge {
+        padding: 0.5em 1em;
+        border-radius: 6px;
+    }
+</style>
+{% endblock %} 
