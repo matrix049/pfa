@@ -5,194 +5,1021 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Become a Host - StayBooking</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Custom CSS (optional) -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
-        .step-number {
-            width: 40px;
-            height: 40px;
+        :root {
+            --primary: #FF385C;
+            --primary-dark: #E31C5F;
+            --secondary: #00A699;
+            --light-gray: #F7F7F7;
+            --dark-gray: #484848;
+            --border-color: #DDDDDD;
+            --shadow: 0 2px 16px rgba(0, 0, 0, 0.12);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8f9fa;
+            overflow-x: hidden;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            z-index: 1000;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar-custom {
+            height: 4px;
+            background: #E5E5E5;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            background-color: #FF5A5F;
-            color: white;
+            background: #E5E5E5;
+            transition: var(--transition);
+        }
+
+        .step-dot.active {
+            background: var(--primary);
+            transform: scale(1.2);
+        }
+
+        /* Main Container */
+        .host-container {
+            min-height: 100vh;
+            padding-top: 120px;
+            display: flex;
+            align-items: center;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: var(--shadow);
+            max-width: 600px;
+            margin: 0 auto;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .step-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        .step-subtitle {
+            font-size: 1.1rem;
+            color: #717171;
+            margin-bottom: 2rem;
+            line-height: 1.4;
+        }
+
+        /* Property Type Selection */
+        .property-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .property-option {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .property-option:hover {
+            border-color: var(--dark-gray);
+            transform: translateY(-2px);
+        }
+
+        .property-option.selected {
+            border-color: var(--primary);
+            background: rgba(255, 56, 92, 0.05);
+        }
+
+        .property-option i {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .property-option span {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--dark-gray);
+        }
+
+        /* Space Type Selection */
+        .space-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .space-option {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .space-option:hover {
+            border-color: var(--dark-gray);
+        }
+
+        .space-option.selected {
+            border-color: var(--primary);
+            background: rgba(255, 56, 92, 0.05);
+        }
+
+        .space-title {
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .space-desc {
+            color: #717171;
+            font-size: 0.95rem;
+        }
+
+        /* Counter Controls */
+        .counter-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid #EBEBEB;
+        }
+
+        .counter-group:last-child {
+            border-bottom: none;
+        }
+
+        .counter-label {
+            font-weight: 500;
+            color: var(--dark-gray);
+        }
+
+        .counter-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .counter-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background: white;
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .counter-btn:hover {
+            border-color: var(--dark-gray);
+        }
+
+        .counter-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .counter-value {
+            font-weight: 500;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* Highlights Selection */
+        .highlights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .highlight-option {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .highlight-option:hover {
+            border-color: var(--dark-gray);
+        }
+
+        .highlight-option.selected {
+            border-color: var(--primary);
+            background: rgba(255, 56, 92, 0.05);
+        }
+
+        /* Form Elements */
+        .form-control-modern {
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: white;
+        }
+
+        .form-control-modern:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.1);
+        }
+
+        .form-label-modern {
             font-weight: 600;
-            font-size: 1.2rem;
+            color: var(--dark-gray);
+            margin-bottom: 0.75rem;
         }
-        .step-item {
-            position: relative;
-        }
-        .step-item:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            left: 20px;
-            top: 60px;
-            height: calc(100% - 40px);
-            width: 2px;
-            background-color: #e9ecef;
-        }
-        .step-item.active .step-number {
-            background-color: #FF5A5F;
-        }
-        .form-control, .form-select {
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-        }
-        .btn-lg {
+
+        /* Buttons */
+        .btn-primary-modern {
+            background: var(--primary);
+            border: none;
+            border-radius: 12px;
             padding: 1rem 2rem;
-            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: var(--transition);
+            color: white;
         }
-        .invalid-feedback {
-            font-size: 0.875rem;
-            color: #FF5A5F;
+
+        .btn-primary-modern:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            color: white;
+        }
+
+        .btn-secondary-modern {
+            background: transparent;
+            border: 2px solid var(--dark-gray);
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            transition: var(--transition);
+        }
+
+        .btn-secondary-modern:hover {
+            background: var(--dark-gray);
+            color: white;
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #EBEBEB;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .content-card {
+                padding: 2rem 1.5rem;
+                margin: 1rem;
+            }
+
+            .step-title {
+                font-size: 1.5rem;
+            }
+
+            .property-grid {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                gap: 0.75rem;
+            }
+
+            .highlights-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+        }
+
+        /* Hidden Steps */
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        /* Welcome Step Special Styling */
+        .welcome-step {
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .welcome-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            margin: 0 auto 2rem;
         }
     </style>
 </head>
 <body>
-<div class="container-fluid p-0">
-    <div class="row g-0">
-        <!-- Left side - Welcome/Start and Form -->
-        <div class="col-md-6 min-vh-100 d-flex align-items-center">
-            <div class="p-5 w-100">
-                <div id="host-welcome">
-                    <h1 class="display-4 mb-4">Commencer sur StayBooking, c'est facile</h1>
-                    <ul class="list-unstyled mb-5">
-                        <li class="mb-4">
-                            <strong>1. Parlez-nous de votre logement</strong><br>
-                            Donnez-nous quelques informations de base, par exemple où il se trouve et combien de voyageurs il peut accueillir.
-                        </li>
-                        <li class="mb-4">
-                            <strong>2. Faites en sorte de vous démarquer</strong><br>
-                            Ajoutez des documents, un titre et une description. Nous allons vous aider.
-                        </li>
-                        <li>
-                            <strong>3. Terminez et publiez</strong><br>
-                            Vérifiez quelques détails, puis soumettez votre demande.
-                        </li>
-                    </ul>
-                    <button id="start-host-form" class="btn btn-primary btn-lg px-5">Commencer</button>
-                </div>
-                <div id="host-form-section" style="display:none;">
-                    {% if messages %}
-                    <div class="mb-4">
-                        {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                        {% endfor %}
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small">Étape <span id="current-step">1</span> sur 6</span>
+                <button class="btn btn-link text-decoration-none" onclick="window.location.href='{% url 'dashboard' %}'"> 
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="progress-bar-custom">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="step-indicator">
+                <div class="step-dot active" data-step="1"></div>
+                <div class="step-dot" data-step="2"></div>
+                <div class="step-dot" data-step="3"></div>
+                <div class="step-dot" data-step="4"></div>
+                <div class="step-dot" data-step="5"></div>
+                <div class="step-dot" data-step="6"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="host-container">
+        <div class="container">
+            <!-- Step 1: Welcome -->
+            <div class="step active" id="step-1">
+                <div class="content-card welcome-step">
+                    <div class="welcome-icon">
+                        <i class="fas fa-home"></i>
                     </div>
-                    {% endif %}
-                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    <h1 class="step-title">Commencer sur StayBooking, c'est facile</h1>
+                    <p class="step-subtitle">Rejoignez notre communauté d'hôtes et commencez à gagner de l'argent en partageant votre espace.</p>
+                    
+                    <div class="text-start mt-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="me-3" style="width: 40px; height: 40px; background: #FF385C; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">1</div>
+                            <div>
+                                <h6 class="mb-1">Parlez-nous de votre logement</h6>
+                                <p class="text-muted small mb-0">Donnez-nous quelques informations de base sur votre propriété</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="me-3" style="width: 40px; height: 40px; background: #FF385C; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">2</div>
+                            <div>
+                                <h6 class="mb-1">Faites en sorte de vous démarquer</h6>
+                                <p class="text-muted small mb-0">Ajoutez des photos, un titre et une description</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="me-3" style="width: 40px; height: 40px; background: #FF385C; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">3</div>
+                            <div>
+                                <h6 class="mb-1">Terminez et publiez</h6>
+                                <p class="text-muted small mb-0">Choisissez un prix et publiez votre annonce</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nav-buttons">
+                        <div></div>
+                        <button class="btn btn-primary-modern" onclick="nextStep()">
+                            Commencer
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Property Type -->
+            <div class="step" id="step-2">
+                <div class="content-card">
+                    <h1 class="step-title">Parmi les propositions suivantes, laquelle décrit le mieux votre logement ?</h1>
+                    <p class="step-subtitle">Choisissez le type qui correspond le mieux à votre propriété</p>
+                    
+                    <div class="property-grid">
+                        <div class="property-option" data-type="house">
+                            <i class="fas fa-home"></i>
+                            <span>Maison</span>
+                        </div>
+                        <div class="property-option" data-type="apartment">
+                            <i class="fas fa-building"></i>
+                            <span>Appartement</span>
+                        </div>
+                        <div class="property-option" data-type="villa">
+                            <i class="fas fa-mountain"></i>
+                            <span>Villa</span>
+                        </div>
+                        <div class="property-option" data-type="cottage">
+                            <i class="fas fa-tree"></i>
+                            <span>Cottage</span>
+                        </div>
+                        <div class="property-option" data-type="boat">
+                            <i class="fas fa-ship"></i>
+                            <span>Bateau</span>
+                        </div>
+                        <div class="property-option" data-type="cabin">
+                            <i class="fas fa-mountain"></i>
+                            <span>Cabane</span>
+                        </div>
+                        <div class="property-option" data-type="caravan">
+                            <i class="fas fa-caravan"></i>
+                            <span>Caravane</span>
+                        </div>
+                        <div class="property-option" data-type="castle">
+                            <i class="fas fa-chess-rook"></i>
+                            <span>Château</span>
+                        </div>
+                        <div class="property-option" data-type="farm">
+                            <i class="fas fa-tractor"></i>
+                            <span>Ferme</span>
+                        </div>
+                        <div class="property-option" data-type="hotel">
+                            <i class="fas fa-bed"></i>
+                            <span>Hôtel</span>
+                        </div>
+                        <div class="property-option" data-type="riad">
+                            <i class="fas fa-mosque"></i>
+                            <span>Riad</span>
+                        </div>
+                        <div class="property-option" data-type="tent">
+                            <i class="fas fa-campground"></i>
+                            <span>Tente</span>
+                        </div>
+                        <div class="property-option" data-type="tiny">
+                            <i class="fas fa-home"></i>
+                            <span>Tiny house</span>
+                        </div>
+                        <div class="property-option" data-type="tower">
+                            <i class="fas fa-broadcast-tower"></i>
+                            <span>Tour</span>
+                        </div>
+                        <div class="property-option" data-type="treehouse">
+                            <i class="fas fa-tree"></i>
+                            <span>Cabane perchée</span>
+                        </div>
+                        <div class="property-option" data-type="other">
+                            <i class="fas fa-ellipsis-h"></i>
+                            <span>Autre</span>
+                        </div>
+                    </div>
+
+                    <div class="nav-buttons">
+                        <button class="btn btn-secondary-modern" onclick="prevStep()">
+                            <i class="fas fa-arrow-left me-2"></i>Retour
+                        </button>
+                        <button class="btn btn-primary-modern" onclick="nextStep()" id="property-next" disabled>
+                            Suivant<i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Space Type -->
+            <div class="step" id="step-3">
+                <div class="content-card">
+                    <h1 class="step-title">Quel type de logement sera à la disposition des voyageurs ?</h1>
+                    <p class="step-subtitle">Choisissez ce qui décrit le mieux l'espace que vous proposez</p>
+                    
+                    <div class="space-options">
+                        <div class="space-option" data-space="entire">
+                            <div class="space-title">Un logement entier</div>
+                            <div class="space-desc">Les voyageurs disposent du logement dans son intégralité.</div>
+                        </div>
+                        <div class="space-option" data-space="room">
+                            <div class="space-title">Une chambre</div>
+                            <div class="space-desc">Les voyageurs ont leur propre chambre dans un logement et ont accès à des espaces partagés.</div>
+                        </div>
+                    </div>
+
+                    <div class="nav-buttons">
+                        <button class="btn btn-secondary-modern" onclick="prevStep()">
+                            <i class="fas fa-arrow-left me-2"></i>Retour
+                        </button>
+                        <button class="btn btn-primary-modern" onclick="nextStep()" id="space-next" disabled>
+                            Suivant<i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Property Details -->
+            <div class="step" id="step-4">
+                <div class="content-card">
+                    <h1 class="step-title">Donnez les informations principales concernant votre logement</h1>
+                    <p class="step-subtitle">Vous pourrez ajouter d'autres informations plus tard, comme les types de lit.</p>
+                    
+                    <div class="mt-4">
+                        <div class="counter-group">
+                            <div class="counter-label">Voyageurs</div>
+                            <div class="counter-controls">
+                                <button class="counter-btn" onclick="updateCounter('guests', -1)">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <span class="counter-value" id="guests-count">1</span>
+                                <button class="counter-btn" onclick="updateCounter('guests', 1)">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="counter-group">
+                            <div class="counter-label">Chambres</div>
+                            <div class="counter-controls">
+                                <button class="counter-btn" onclick="updateCounter('bedrooms', -1)">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <span class="counter-value" id="bedrooms-count">1</span>
+                                <button class="counter-btn" onclick="updateCounter('bedrooms', 1)">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="counter-group">
+                            <div class="counter-label">Lits</div>
+                            <div class="counter-controls">
+                                <button class="counter-btn" onclick="updateCounter('beds', -1)">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <span class="counter-value" id="beds-count">1</span>
+                                <button class="counter-btn" onclick="updateCounter('beds', 1)">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="counter-group">
+                            <div class="counter-label">Salles de bain</div>
+                            <div class="counter-controls">
+                                <button class="counter-btn" onclick="updateCounter('bathrooms', -1)">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <span class="counter-value" id="bathrooms-count">1</span>
+                                <button class="counter-btn" onclick="updateCounter('bathrooms', 1)">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nav-buttons">
+                        <button class="btn btn-secondary-modern" onclick="prevStep()">
+                            <i class="fas fa-arrow-left me-2"></i>Retour
+                        </button>
+                        <button class="btn btn-primary-modern" onclick="nextStep()">
+                            Suivant<i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Highlights -->
+            <div class="step" id="step-5">
+                <div class="content-card">
+                    <h1 class="step-title">Choisissez jusqu'à 2 points forts</h1>
+                    <p class="step-subtitle">Ils seront utiles pour commencer votre description.</p>
+                    
+                    <div class="highlights-grid">
+                        <div class="highlight-option" data-highlight="peaceful">
+                            <i class="fas fa-leaf" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                            <div>Paisible</div>
+                        </div>
+                        <div class="highlight-option" data-highlight="unique">
+                            <i class="fas fa-star" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                            <div>Unique</div>
+                        </div>
+                        <div class="highlight-option" data-highlight="family">
+                            <i class="fas fa-users" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                            <div>Adapté aux familles</div>
+                        </div>
+                        <div class="highlight-option" data-highlight="elegant">
+                            <i class="fas fa-gem" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                            <div>Élégant</div>
+                        </div>
+                        <div class="highlight-option" data-highlight="central">
+                            <i class="fas fa-map-marker-alt" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                            <div>Central</div>
+                        </div>
+                        <div class="highlight-option" data-highlight="spacious">
+                            <i class="fas fa-expand-arrows-alt" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                            <div>Spacieux</div>
+                        </div>
+                    </div>
+
+                    <div class="nav-buttons">
+                        <button class="btn btn-secondary-modern" onclick="prevStep()">
+                            <i class="fas fa-arrow-left me-2"></i>Retour
+                        </button>
+                        <button class="btn btn-primary-modern" onclick="nextStep()">
+                            Suivant<i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 6: Final Details -->
+            <div class="step" id="step-6">
+                <div class="content-card">
+                    <h1 class="step-title">Dernières informations</h1>
+                    <p class="step-subtitle">Ajoutez quelques détails pour compléter votre annonce</p>
+                    
+                    <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
-                        <div class="steps-container">
-                            <!-- Step 1: Business Information -->
-                            <div class="step-item active mb-5">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="step-number">1</div>
-                                    <h3 class="mb-0 ms-3">Business Information</h3>
-                                </div>
-                                <div class="ms-5 ps-2">
-                                    <div class="mb-3">
-                                        <label class="form-label">{{ form.business_name.label }}</label>
-                                        {{ form.business_name }}
-                                        {% if form.business_name.errors %}
-                                        <div class="invalid-feedback d-block">{{ form.business_name.errors }}</div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">{{ form.business_address.label }}</label>
-                                        {{ form.business_address }}
-                                        {% if form.business_address.errors %}
-                                        <div class="invalid-feedback d-block">{{ form.business_address.errors }}</div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">{{ form.business_phone.label }}</label>
-                                        {{ form.business_phone }}
-                                        {% if form.business_phone.errors %}
-                                        <div class="invalid-feedback d-block">{{ form.business_phone.errors }}</div>
-                                        {% endif %}
-                                    </div>
-                                </div>
+                        <div class="mb-4">
+                            <label class="form-label-modern">Titre de votre annonce</label>
+                            <input type="text" class="form-control-modern" name="title" placeholder="Ex: Appartement cosy au cœur de Rabat" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label-modern">Description</label>
+                            <textarea class="form-control-modern" name="description" rows="4" placeholder="Décrivez votre logement, les équipements disponibles et ce qui le rend spécial..." required></textarea>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label-modern">Adresse complète</label>
+                            <input type="text" class="form-control-modern" name="address" placeholder="Numéro, rue, ville" required>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label-modern">Prix par nuit (MAD)</label>
+                                <input type="number" class="form-control-modern" name="price" placeholder="500" required>
                             </div>
-                            <!-- Step 2: Documentation -->
-                            <div class="step-item mb-5">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="step-number">2</div>
-                                    <h3 class="mb-0 ms-3">Documentation</h3>
-                                </div>
-                                <div class="ms-5 ps-2">
-                                    <div class="mb-3">
-                                        <label class="form-label">{{ form.identity_document.label }}</label>
-                                        {{ form.identity_document }}
-                                        <div class="form-text">{{ form.identity_document.help_text }}</div>
-                                        {% if form.identity_document.errors %}
-                                        <div class="invalid-feedback d-block">{{ form.identity_document.errors }}</div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Step 3: Description -->
-                            <div class="step-item">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="step-number">3</div>
-                                    <h3 class="mb-0 ms-3">Your Experience</h3>
-                                </div>
-                                <div class="ms-5 ps-2">
-                                    <div class="mb-3">
-                                        <label class="form-label">{{ form.description.label }}</label>
-                                        {{ form.description }}
-                                        <div class="form-text">{{ form.description.help_text }}</div>
-                                        {% if form.description.errors %}
-                                        <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
-                                        {% endif %}
-                                    </div>
-                                </div>
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label-modern">Photos (minimum 1)</label>
+                                <input type="file" class="form-control-modern" name="photos" multiple accept="image/*" required>
                             </div>
                         </div>
-                        <div class="mt-5">
-                            <button type="submit" class="btn btn-primary btn-lg px-5">
-                                <i class="fas fa-paper-plane me-2"></i>Envoyer à l'admin
+
+                        <!-- Hidden fields to store step data -->
+                        <input type="hidden" name="property_type" id="selected-property-type">
+                        <input type="hidden" name="space_type" id="selected-space-type">
+                        <input type="hidden" name="guests" id="final-guests">
+                        <input type="hidden" name="bedrooms" id="final-bedrooms">
+                        <input type="hidden" name="beds" id="final-beds">
+                        <input type="hidden" name="bathrooms" id="final-bathrooms">
+                        <input type="hidden" name="highlights" id="selected-highlights">
+
+                        <div class="nav-buttons">
+                            <button type="button" class="btn btn-secondary-modern" onclick="prevStep()">
+                                <i class="fas fa-arrow-left me-2"></i>Retour
                             </button>
-                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-lg px-5 ms-2">
-                                <i class="fas fa-times me-2"></i>Annuler
-                            </a>
-                        </div>
-                        <div class="form-text mt-3 text-muted">
-                            Votre demande sera examinée par un administrateur.
+                            <button type="submit" class="btn btn-primary-modern">
+                                <i class="fas fa-check me-2"></i>Créer l'annonce
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-        <!-- Right side - Image -->
-        <div class="col-md-6 min-vh-100 bg-light d-none d-md-block">
-            <div class="h-100 d-flex align-items-center justify-content-center">
-                <img src="/media/madrid/becomehost.png" alt="Become a host" class="img-fluid" style="max-height: 400px;">
-            </div>
-        </div>
     </div>
-</div>
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const startBtn = document.getElementById('start-host-form');
-    const welcome = document.getElementById('host-welcome');
-    const formSection = document.getElementById('host-form-section');
-    if (startBtn) {
-        startBtn.addEventListener('click', function() {
-            welcome.style.display = 'none';
-            formSection.style.display = 'block';
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let currentStep = 1;
+        const totalSteps = 6;
+        let selectedPropertyType = '';
+        let selectedSpaceType = '';
+        let selectedHighlights = [];
+        
+        // Counters
+        let counters = {
+            guests: 1,
+            bedrooms: 1,
+            beds: 1,
+            bathrooms: 1
+        };
+
+        // Update progress bar
+        function updateProgress() {
+            const progressPercent = (currentStep / totalSteps) * 100;
+            document.getElementById('progress-fill').style.width = progressPercent + '%';
+            document.getElementById('current-step').textContent = currentStep;
+            
+            // Update step indicators
+            document.querySelectorAll('.step-dot').forEach((dot, index) => {
+                if (index + 1 <= currentStep) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+
+        // Navigate to next step
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                // Hide current step
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+                
+                // Show next step
+                currentStep++;
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+                document.getElementById(`step-${currentStep}`).classList.add('slide-in');
+                
+                updateProgress();
+                
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Update final form fields if we're on the last step
+                if (currentStep === totalSteps) {
+                    updateFinalForm();
+                }
+            }
+        }
+
+        // Navigate to previous step
+        function prevStep() {
+            if (currentStep > 1) {
+                // Hide current step
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+                
+                // Show previous step
+                currentStep--;
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+                
+                updateProgress();
+                
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Property type selection
+        document.querySelectorAll('.property-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove previous selection
+                document.querySelectorAll('.property-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Add selection to clicked option
+                this.classList.add('selected');
+                selectedPropertyType = this.dataset.type;
+                
+                // Enable next button
+                document.getElementById('property-next').disabled = false;
+            });
         });
-    }
-});
-</script>
+
+        // Space type selection
+        document.querySelectorAll('.space-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove previous selection
+                document.querySelectorAll('.space-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Add selection to clicked option
+                this.classList.add('selected');
+                selectedSpaceType = this.dataset.space;
+                
+                // Enable next button
+                document.getElementById('space-next').disabled = false;
+            });
+        });
+
+        // Counter functions
+        function updateCounter(type, change) {
+            const newValue = Math.max(0, counters[type] + change);
+            
+            // Special rules
+            if (type === 'guests' && newValue < 1) return;
+            if (type === 'bedrooms' && newValue < 1) return;
+            if (type === 'beds' && newValue < 1) return;
+            if (type === 'bathrooms' && newValue < 0.5) return;
+            
+            counters[type] = newValue;
+            document.getElementById(`${type}-count`).textContent = newValue;
+            
+            // Update counter buttons state
+            updateCounterButtons();
+        }
+
+        function updateCounterButtons() {
+            Object.keys(counters).forEach(type => {
+                const minusBtn = document.querySelector(`[onclick="updateCounter('${type}', -1)"]`);
+                const value = counters[type];
+                
+                // Disable minus button if at minimum
+                if ((type === 'guests' || type === 'bedrooms' || type === 'beds') && value <= 1) {
+                    minusBtn.disabled = true;
+                } else if (type === 'bathrooms' && value <= 0) {
+                    minusBtn.disabled = true;
+                } else {
+                    minusBtn.disabled = false;
+                }
+            });
+        }
+
+        // Highlights selection
+        document.querySelectorAll('.highlight-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const highlight = this.dataset.highlight;
+                
+                if (this.classList.contains('selected')) {
+                    // Deselect
+                    this.classList.remove('selected');
+                    selectedHighlights = selectedHighlights.filter(h => h !== highlight);
+                } else {
+                    // Select (max 2)
+                    if (selectedHighlights.length < 2) {
+                        this.classList.add('selected');
+                        selectedHighlights.push(highlight);
+                    } else {
+                        // Replace oldest selection
+                        const oldestHighlight = selectedHighlights.shift();
+                        document.querySelector(`[data-highlight="${oldestHighlight}"]`).classList.remove('selected');
+                        
+                        this.classList.add('selected');
+                        selectedHighlights.push(highlight);
+                    }
+                }
+            });
+        });
+
+        // Update final form with all selections
+        function updateFinalForm() {
+            document.getElementById('selected-property-type').value = selectedPropertyType;
+            document.getElementById('selected-space-type').value = selectedSpaceType;
+            document.getElementById('final-guests').value = counters.guests;
+            document.getElementById('final-bedrooms').value = counters.bedrooms;
+            document.getElementById('final-beds').value = counters.beds;
+            document.getElementById('final-bathrooms').value = counters.bathrooms;
+            document.getElementById('selected-highlights').value = selectedHighlights.join(',');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProgress();
+            updateCounterButtons();
+        });
+
+        // Form validation before submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const title = document.querySelector('input[name="title"]').value;
+            const description = document.querySelector('textarea[name="description"]').value;
+            const address = document.querySelector('input[name="address"]').value;
+            const price = document.querySelector('input[name="price"]').value;
+            const photos = document.querySelector('input[name="photos"]').files;
+
+            if (!title || !description || !address || !price || photos.length === 0) {
+                e.preventDefault();
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+
+            if (!selectedPropertyType || !selectedSpaceType) {
+                e.preventDefault();
+                alert('Veuillez compléter toutes les étapes précédentes');
+                return;
+            }
+
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>Création en cours...';
+            submitBtn.disabled = true;
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === 'Enter') {
+                const nextBtn = document.querySelector(`#step-${currentStep} .btn-primary-modern`);
+                if (nextBtn && !nextBtn.disabled) {
+                    nextBtn.click();
+                }
+            } else if (e.key === 'ArrowLeft') {
+                if (currentStep > 1) {
+                    prevStep();
+                }
+            }
+        });
+
+        // Auto-save progress to localStorage
+        function saveProgress() {
+            const progress = {
+                currentStep,
+                selectedPropertyType,
+                selectedSpaceType,
+                counters,
+                selectedHighlights
+            };
+            localStorage.setItem('hostingProgress', JSON.stringify(progress));
+        }
+
+        // Load saved progress
+        function loadProgress() {
+            const saved = localStorage.getItem('hostingProgress');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                // Restore state if needed
+                console.log('Previous progress found:', progress);
+            }
+        }
+
+        // Save progress on each step
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                saveProgress();
+                
+                // Hide current step
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+                
+                // Show next step
+                currentStep++;
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+                document.getElementById(`step-${currentStep}`).classList.add('slide-in');
+                
+                updateProgress();
+                
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Update final form fields if we're on the last step
+                if (currentStep === totalSteps) {
+                    updateFinalForm();
+                }
+            }
+        }
+
+        // Initialize app
+        loadProgress();
+    </script>
 </body>
-</html> 
+</html>
