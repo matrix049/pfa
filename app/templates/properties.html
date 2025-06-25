@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load querystring_filters %}
 
 {% block title %}Properties - StayBooking{% endblock %}
 
@@ -816,7 +817,7 @@
                         <div class="filter-checkbox">
                             <input type="checkbox" name="type" value="{{ type_choice.0 }}" 
                                    id="type_{{ type_choice.0 }}"
-                                   {% if type_choice.0 in request.GET.getlist:'type' %}checked{% endif %}>
+                                   {% if type_choice.0 in request.GET|getlist:'type' %}checked{% endif %}>
                             <label for="type_{{ type_choice.0 }}">{{ type_choice.1 }}</label>
                         </div>
                         {% endfor %}
@@ -830,13 +831,13 @@
                         <div class="filter-checkbox">
                             <input type="checkbox" name="space_type" value="entire" 
                                    id="space_entire"
-                                   {% if 'entire' in request.GET.getlist:'space_type' %}checked{% endif %}>
+                                   {% if 'entire' in request.GET|getlist:'space_type' %}checked{% endif %}>
                             <label for="space_entire">Entire Place</label>
                         </div>
                         <div class="filter-checkbox">
                             <input type="checkbox" name="space_type" value="room" 
                                    id="space_room"
-                                   {% if 'room' in request.GET.getlist:'space_type' %}checked{% endif %}>
+                                   {% if 'room' in request.GET|getlist:'space_type' %}checked{% endif %}>
                             <label for="space_room">Private Room</label>
                         </div>
                     </div>
@@ -849,31 +850,31 @@
                         <div class="filter-checkbox">
                             <input type="checkbox" name="amenities" value="wifi" 
                                    id="amenity_wifi"
-                                   {% if 'wifi' in request.GET.getlist:'amenities' %}checked{% endif %}>
+                                   {% if 'wifi' in request.GET|getlist:'amenities' %}checked{% endif %}>
                             <label for="amenity_wifi">WiFi</label>
                         </div>
                         <div class="filter-checkbox">
                             <input type="checkbox" name="amenities" value="kitchen" 
                                    id="amenity_kitchen"
-                                   {% if 'kitchen' in request.GET.getlist:'amenities' %}checked{% endif %}>
+                                   {% if 'kitchen' in request.GET|getlist:'amenities' %}checked{% endif %}>
                             <label for="amenity_kitchen">Kitchen</label>
                         </div>
                         <div class="filter-checkbox">
                             <input type="checkbox" name="amenities" value="parking" 
                                    id="amenity_parking"
-                                   {% if 'parking' in request.GET.getlist:'amenities' %}checked{% endif %}>
+                                   {% if 'parking' in request.GET|getlist:'amenities' %}checked{% endif %}>
                             <label for="amenity_parking">Parking</label>
                         </div>
                         <div class="filter-checkbox">
                             <input type="checkbox" name="amenities" value="pool" 
                                    id="amenity_pool"
-                                   {% if 'pool' in request.GET.getlist:'amenities' %}checked{% endif %}>
+                                   {% if 'pool' in request.GET|getlist:'amenities' %}checked{% endif %}>
                             <label for="amenity_pool">Swimming Pool</label>
                         </div>
                         <div class="filter-checkbox">
                             <input type="checkbox" name="amenities" value="air_conditioning" 
                                    id="amenity_ac"
-                                   {% if 'air_conditioning' in request.GET.getlist:'amenities' %}checked{% endif %}>
+                                   {% if 'air_conditioning' in request.GET|getlist:'amenities' %}checked{% endif %}>
                             <label for="amenity_ac">Air Conditioning</label>
                         </div>
                     </div>
@@ -897,12 +898,6 @@
                         <h6 class="filter-title">
                             <i class="fas fa-bolt"></i>Booking Options
                         </h6>
-                        <div class="filter-checkbox">
-                            <input type="checkbox" name="instant_book" value="true" 
-                                   id="instant_book"
-                                   {% if request.GET.instant_book %}checked{% endif %}>
-                            <label for="instant_book">Instant Book</label>
-                        </div>
                         <div class="filter-checkbox">
                             <input type="checkbox" name="superhost" value="true" 
                                    id="superhost"
@@ -1351,3 +1346,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+{% endblock %}

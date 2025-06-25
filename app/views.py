@@ -55,8 +55,6 @@ def properties(request):
         else:
             properties = properties.filter(bedrooms=bedrooms)
 
-    if request.GET.get('instant_book'):
-        properties = properties.filter(instant_book=True)
     if request.GET.get('superhost'):
         properties = properties.filter(host__userprofile__role='host', host__userprofile__is_superhost=True)
 
