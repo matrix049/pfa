@@ -449,28 +449,8 @@
                         </div>
                     </div>
 
-                    <!-- Profile Stats -->
+                    <!-- Profile Content -->
                     <div class="profile-content">
-                        <div class="profile-stats">
-                            <div class="stat-card">
-                                <div class="stat-number">{{ user.bookings.count }}</div>
-                                <div class="stat-label">Bookings</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-number">{{ user.reviews.count }}</div>
-                                <div class="stat-label">Reviews</div>
-                            </div>
-                            {% if user.userprofile.role == 'host' %}
-                            <div class="stat-card">
-                                <div class="stat-number">{{ user.properties.count }}</div>
-                                <div class="stat-label">Properties</div>
-                            </div>
-                            {% endif %}
-                            <div class="stat-card">
-                                <div class="stat-number">{{ user.userprofile.role|title }}</div>
-                                <div class="stat-label">Role</div>
-                            </div>
-                        </div>
 
                         <!-- Alert Messages -->
                         {% if messages %}
@@ -772,8 +752,127 @@ document.addEventListener('DOMContentLoaded', function() {
     
     document.querySelectorAll('.form-section').forEach(section => {
         section.style.opacity = '0';
-        section.style.transform = 'translateY(30px)';
+        section.style.transform = 'translateY(20px)';
+        section.style.transition = 'all 0.6s ease';
         observer.observe(section);
+    });
+    
+    // Auto-save draft functionality
+    let saveTimeout;
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                saveDraft();
+            }, 2000);
+        });
+    });
+    
+    function saveDraft() {
+        const formData = new FormData(form);
+        const data = {};
+        for (let [key, value] of formData.entries()) {
+            if (key !== 'csrfmiddlewaretoken' && key !== 'avatar') {
+                data[key] = value;
+            }
+        }
+        localStorage.setItem('profileDraft', JSON.stringify(data));
+        showToast('Draft saved automatically', 'info');
+    }
+    
+    function loadDraft() {
+        const draft = localStorage.getItem('profileDraft');
+        if (draft) {
+            const data = JSON.parse(draft);
+            Object.keys(data).forEach(key => {
+                const field = form.querySelector(`[name="${key}"]`);
+                if (field && field.type !== 'file') {
+                    if (field.type === 'checkbox') {
+                        field.checked = data[key] === 'on';
+                    } else {
+                        field.value = data[key];
+                    }
+                }
+            });
+        }
+    }
+    
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `alert-modern alert-${type}-modern position-fixed`;
+        toast.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 300px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        `;
+        toast.innerHTML = `
+            <i class="fas fa-${type === 'info' ? 'info-circle' : type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+            ${message}
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(0)';
+        }, 100);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 300);
+        }, 3000);
+    }
+    
+    // Character counter for bio
+    const bioField = form.querySelector('textarea[name="bio"]');
+    if (bioField) {
+        const maxLength = 500;
+        const counter = document.createElement('div');
+        counter.className = 'text-muted small mt-1';
+        counter.style.textAlign = 'right';
+        bioField.parentNode.appendChild(counter);
+        
+        function updateCounter() {
+            const remaining = maxLength - bioField.value.length;
+            counter.textContent = `${remaining} characters remaining`;
+            counter.style.color = remaining < 50 ? 'var(--profile-danger)' : 'var(--profile-gray)';
+        }
+        
+        bioField.addEventListener('input', updateCounter);
+        updateCounter();
+    }
+    
+    // Phone number formatting
+    const phoneField = form.querySelector('input[name="phone_number"]');
+    if (phoneField) {
+        phoneField.addEventListener('input', function() {
+            let value = this.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                if (value.length <= 3) {
+                    value = value;
+                } else if (value.length <= 6) {
+                    value = value.slice(0, 3) + '-' + value.slice(3);
+                } else {
+                    value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 10);
+                }
+            }
+            this.value = value;
+        });
+    }
+    
+    // Load draft on page load
+    loadDraft();
+    
+    // Clear draft on successful submission
+    form.addEventListener('submit', function() {
+        localStorage.removeItem('profileDraft');
     });
 });
 </script>

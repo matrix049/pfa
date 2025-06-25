@@ -3,326 +3,885 @@
 
 {% block title %}Dashboard - StayBooking{% endblock %}
 
+{% block extra_css %}
+<style>
+:root {
+    --dashboard-primary: #667eea;
+    --dashboard-secondary: #764ba2;
+    --dashboard-success: #4facfe;
+    --dashboard-warning: #f8b500;
+    --dashboard-danger: #ff6b6b;
+    --dashboard-light: #f8f9fa;
+    --dashboard-dark: #2d3748;
+    --dashboard-gray: #718096;
+    --dashboard-border: #e2e8f0;
+    --dashboard-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    --dashboard-radius: 20px;
+    --dashboard-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-header {
+    background: linear-gradient(135deg, var(--dashboard-primary) 0%, var(--dashboard-secondary) 100%);
+    color: white;
+    padding: 3rem 0 2rem;
+    margin-bottom: 2rem;
+    border-radius: 0 0 30px 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" fill-opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" fill-opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" fill-opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    pointer-events: none;
+}
+
+.welcome-section {
+    position: relative;
+    z-index: 1;
+}
+
+.welcome-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.welcome-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: -50px 15px 3rem;
+    position: relative;
+    z-index: 2;
+}
+
+.stat-card {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--dashboard-radius);
+    text-align: center;
+    box-shadow: var(--dashboard-shadow);
+    transition: var(--dashboard-transition);
+    border: 1px solid var(--dashboard-border);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--dashboard-primary);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--dashboard-gray);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--dashboard-primary), var(--dashboard-secondary));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    margin: 0 auto 1rem;
+}
+
+.sidebar-modern {
+    background: white;
+    border-radius: var(--dashboard-radius);
+    box-shadow: var(--dashboard-shadow);
+    padding: 2rem;
+    height: fit-content;
+    position: sticky;
+    top: 2rem;
+}
+
+.profile-section {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--dashboard-border);
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid white;
+    box-shadow: var(--dashboard-shadow);
+    margin-bottom: 1rem;
+}
+
+.profile-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--dashboard-dark);
+    margin-bottom: 0.5rem;
+}
+
+.profile-role {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.role-admin {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+    color: white;
+}
+
+.role-host {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+}
+
+.role-pending {
+    background: linear-gradient(135deg, #f8b500, #ffd93d);
+    color: white;
+}
+
+.role-user {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.nav-links-modern {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-link-modern {
+    display: block;
+    padding: 1rem 1.5rem;
+    color: var(--dashboard-gray);
+    text-decoration: none;
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+    transition: var(--dashboard-transition);
+    font-weight: 500;
+}
+
+.nav-link-modern:hover,
+.nav-link-modern.active {
+    background: var(--dashboard-primary);
+    color: white;
+    transform: translateX(5px);
+}
+
+.nav-link-modern i {
+    margin-right: 0.75rem;
+    width: 20px;
+}
+
+.content-card {
+    background: white;
+    border-radius: var(--dashboard-radius);
+    box-shadow: var(--dashboard-shadow);
+    border: none;
+    margin-bottom: 2rem;
+}
+
+.content-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--dashboard-border);
+    background: var(--dashboard-light);
+    border-radius: var(--dashboard-radius) var(--dashboard-radius) 0 0;
+}
+
+.content-header h3 {
+    margin: 0;
+    color: var(--dashboard-dark);
+    font-weight: 700;
+}
+
+.content-body {
+    padding: 2rem;
+}
+
+.badge-modern {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-warning-modern {
+    background: linear-gradient(135deg, #f8b500, #ffd93d);
+    color: white;
+}
+
+.badge-success-modern {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+}
+
+.badge-danger-modern {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+    color: white;
+}
+
+.btn-modern {
+    background: linear-gradient(135deg, var(--dashboard-primary), var(--dashboard-secondary));
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: var(--dashboard-transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+.btn-outline-modern {
+    background: transparent;
+    color: var(--dashboard-primary);
+    border: 2px solid var(--dashboard-primary);
+}
+
+.btn-outline-modern:hover {
+    background: var(--dashboard-primary);
+    color: white;
+}
+
+.alert-modern {
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid;
+}
+
+.alert-info-modern {
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--dashboard-primary);
+    border-left-color: var(--dashboard-primary);
+}
+
+.quick-actions {
+    background: white;
+    border-radius: var(--dashboard-radius);
+    box-shadow: var(--dashboard-shadow);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.quick-actions h4 {
+    color: var(--dashboard-dark);
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.action-card {
+    background: var(--dashboard-light);
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+    transition: var(--dashboard-transition);
+    border: 2px solid transparent;
+}
+
+.action-card:hover {
+    border-color: var(--dashboard-primary);
+    transform: translateY(-2px);
+}
+
+.action-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--dashboard-primary), var(--dashboard-secondary));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    margin: 0 auto 1rem;
+}
+
+@media (max-width: 768px) {
+    .profile-stats {
+        grid-template-columns: repeat(2, 1fr);
+        margin: -30px 15px 2rem;
+    }
+    
+    .stat-card {
+        padding: 1.5rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .welcome-title {
+        font-size: 2rem;
+    }
+    
+    .sidebar-modern {
+        margin-bottom: 2rem;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-5">
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <div class="container">
+        <div class="welcome-section text-center">
+            <h1 class="welcome-title">Welcome back, {{ user.get_full_name|default:user.username }}!</h1>
+            <p class="welcome-subtitle">Manage your bookings, properties, and account settings</p>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Statistics -->
+<div class="container">
+    <div class="profile-stats">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-number">{{ bookings.count }}</div>
+            <div class="stat-label">Bookings</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-number">{{ reviews.count }}</div>
+            <div class="stat-label">Reviews</div>
+        </div>
+        {% if user.userprofile.role == 'host' or user.userprofile.role == 'admin' %}
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-home"></i>
+            </div>
+            <div class="stat-number">{{ managed_properties.count }}</div>
+            <div class="stat-label">Properties</div>
+        </div>
+        {% endif %}
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-user-tag"></i>
+            </div>
+            <div class="stat-number">{{ user.userprofile.role|title }}</div>
+            <div class="stat-label">Role</div>
+        </div>
+    </div>
+
     <div class="row">
         <!-- Sidebar -->
-        <div class="col-md-3">
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <div class="text-center mb-4">
-                        <img src="{{ request.user.userprofile.avatar.url|default:'https://via.placeholder.com/150' }}" 
-                             alt="{{ request.user.get_full_name }}" 
-                             class="rounded-circle mb-3"
-                             style="width: 100px; height: 100px; object-fit: cover;">
-                        <h5 class="mb-0">{{ request.user.get_full_name }}</h5>
-                        <p class="text-muted">
-                            {% if user_role == 'admin' %}
-                                Administrator
-                            {% elif user_role == 'host' %}
-                                Host
-                            {% elif user_role == 'pending_host' %}
-                                Pending Host
-                            {% else %}
-                                Regular User
-                            {% endif %}
-                        </p>
-                    </div>
-                    
-                    <div class="list-group">
-                        <a href="#bookings" class="list-group-item list-group-item-action active" data-bs-toggle="list">
-                            <i class="fas fa-calendar me-2"></i>My Bookings
-                        </a>
-                        <a href="#reviews" class="list-group-item list-group-item-action" data-bs-toggle="list">
-                            <i class="fas fa-star me-2"></i>My Reviews
-                        </a>
-                        {% if user_role == 'host' or user_role == 'admin' %}
-                        <a href="#properties" class="list-group-item list-group-item-action" data-bs-toggle="list">
-                            <i class="fas fa-home me-2"></i>My Properties
-                        </a>
-                        {% endif %}
-                        {% if user_role == 'admin' %}
-                        <a href="#applications" class="list-group-item list-group-item-action" data-bs-toggle="list">
-                            <i class="fas fa-user-check me-2"></i>Host Applications
-                        </a>
-                        {% endif %}
-                        <a href="{% url 'edit_profile' %}" class="list-group-item list-group-item-action">
-                            <i class="fas fa-user-edit me-2"></i>Edit Profile
-                        </a>
-                    </div>
+        <div class="col-lg-3 col-md-4">
+            <div class="sidebar-modern">
+                <div class="profile-section">
+                    <img src="{{ request.user.userprofile.avatar.url|default:'https://via.placeholder.com/150' }}" 
+                         alt="{{ request.user.get_full_name }}" 
+                         class="profile-avatar">
+                    <div class="profile-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+                    <span class="profile-role role-{{ user_role }}">{{ user_role|title }}</span>
                 </div>
+                
+                <ul class="nav-links-modern">
+                    <li>
+                        <a href="#bookings" class="nav-link-modern active" data-bs-toggle="list">
+                            <i class="fas fa-calendar"></i>My Bookings
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#reviews" class="nav-link-modern" data-bs-toggle="list">
+                            <i class="fas fa-star"></i>My Reviews
+                        </a>
+                    </li>
+                    {% if user_role == 'host' or user_role == 'admin' %}
+                    <li>
+                        <a href="#properties" class="nav-link-modern" data-bs-toggle="list">
+                            <i class="fas fa-home"></i>My Properties
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% if user_role == 'admin' %}
+                    <li>
+                        <a href="#applications" class="nav-link-modern" data-bs-toggle="list">
+                            <i class="fas fa-user-check"></i>Host Applications
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li>
+                        <a href="{% url 'edit_profile' %}" class="nav-link-modern">
+                            <i class="fas fa-user-edit"></i>Edit Profile
+                        </a>
+                    </li>
+                </ul>
             </div>
 
+            <!-- Quick Actions -->
             {% if user_role == 'user' %}
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <h5>Want to become a host?</h5>
-                    <p class="text-muted">Share your space and earn extra income</p>
-                    <a href="{% url 'become_host' %}" class="btn btn-primary">
-                        <i class="fas fa-home me-2"></i>Become a Host
-                    </a>
+            <div class="quick-actions">
+                <h4><i class="fas fa-rocket me-2"></i>Quick Actions</h4>
+                <div class="action-grid">
+                    <div class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h6>Become a Host</h6>
+                        <p class="text-muted small">Share your space and earn money</p>
+                        <a href="{% url 'become_host' %}" class="btn-modern btn-sm">
+                            Start Now
+                        </a>
+                    </div>
                 </div>
             </div>
             {% elif user_role == 'pending_host' and host_application %}
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Application Status</h5>
-                    <p class="mb-2">
-                        <strong>Status:</strong> 
-                        <span class="badge bg-warning">Pending Review</span>
-                    </p>
-                    <p class="mb-2">
-                        <strong>Submitted:</strong><br>
-                        {{ host_application.created_at|date:"M d, Y" }}
-                    </p>
-                    <p class="text-muted small">We'll notify you once your application is reviewed.</p>
+            <div class="quick-actions">
+                <h4><i class="fas fa-clock me-2"></i>Application Status</h4>
+                <div class="alert-modern alert-info-modern">
+                    <strong>Status:</strong> Pending Review<br>
+                    <strong>Submitted:</strong> {{ host_application.created_at|date:"M d, Y" }}<br>
+                    <small>We'll notify you once reviewed.</small>
+                </div>
+            </div>
+            {% elif user_role == 'host' %}
+            <div class="quick-actions">
+                <h4><i class="fas fa-plus me-2"></i>Host Actions</h4>
+                <div class="action-grid">
+                    <div class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <h6>Add Property</h6>
+                        <a href="{% url 'create_listing' %}" class="btn-modern btn-sm">
+                            Create Listing
+                        </a>
+                    </div>
                 </div>
             </div>
             {% endif %}
         </div>
 
         <!-- Main Content -->
-        <div class="col-md-9">
+        <div class="col-lg-9 col-md-8">
             <div class="tab-content">
                 <!-- Bookings Tab -->
                 <div class="tab-pane fade show active" id="bookings">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3>My Bookings</h3>
-                    </div>
-                    {% if bookings %}
-                    <div class="row">
-                        {% for booking in bookings %}
-                        <div class="col-md-6 mb-4">
-                            <div class="card shadow-sm h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ booking.property.title }}</h5>
-                                    <p class="text-muted mb-2">
-                                        <i class="fas fa-map-marker-alt me-2"></i>{{ booking.property.location }}
-                                    </p>
-                                    <div class="mb-3">
-                                        <span class="badge {% if booking.status == 'confirmed' %}bg-success{% elif booking.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
-                                            {{ booking.status|title }}
-                                        </span>
-                                    </div>
-                                    <p class="mb-1"><strong>Check-in:</strong> {{ booking.check_in|date:"M d, Y" }}</p>
-                                    <p class="mb-1"><strong>Check-out:</strong> {{ booking.check_out|date:"M d, Y" }}</p>
-                                    <p class="mb-1"><strong>Guests:</strong> {{ booking.guests }}</p>
-                                    <p class="mb-0"><strong>Total:</strong> ${{ booking.total_price }}</p>
-                                </div>
-                                {% if booking.status == 'pending' or booking.status == 'confirmed' %}
-                                <div class="card-footer bg-transparent">
-                                    <form method="post" action="{% url 'cancel_booking' booking.pk %}" class="d-inline">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-outline-danger btn-sm">
-                                            <i class="fas fa-times me-2"></i>Cancel Booking
-                                        </button>
-                                    </form>
-                                </div>
-                                {% endif %}
-                            </div>
+                    <div class="content-card">
+                        <div class="content-header">
+                            <h3><i class="fas fa-calendar me-2"></i>My Bookings</h3>
                         </div>
-                        {% endfor %}
+                        <div class="content-body">
+                            {% if bookings %}
+                            <div class="row">
+                                {% for booking in bookings %}
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ booking.property.title }}</h5>
+                                            <p class="text-muted mb-2">
+                                                <i class="fas fa-map-marker-alt me-2"></i>{{ booking.property.location }}
+                                            </p>
+                                            <div class="mb-3">
+                                                <span class="badge-modern {% if booking.status == 'confirmed' %}badge-success-modern{% elif booking.status == 'pending' %}badge-warning-modern{% else %}badge-danger-modern{% endif %}">
+                                                    {{ booking.status|title }}
+                                                </span>
+                                            </div>
+                                            <p class="mb-1"><strong>Check-in:</strong> {{ booking.check_in|date:"M d, Y" }}</p>
+                                            <p class="mb-1"><strong>Check-out:</strong> {{ booking.check_out|date:"M d, Y" }}</p>
+                                            <p class="mb-1"><strong>Guests:</strong> {{ booking.guests }}</p>
+                                            <p class="mb-0"><strong>Total:</strong> ${{ booking.total_price }}</p>
+                                        </div>
+                                        {% if booking.status == 'pending' or booking.status == 'confirmed' %}
+                                        <div class="card-footer bg-transparent">
+                                            <form method="post" action="{% url 'cancel_booking' booking.pk %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                    <i class="fas fa-times me-2"></i>Cancel Booking
+                                                </button>
+                                            </form>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="alert-modern alert-info-modern text-center">
+                                <i class="fas fa-info-circle me-2"></i>You don't have any bookings yet.
+                                <div class="mt-3">
+                                    <a href="{% url 'properties' %}" class="btn-modern">
+                                        <i class="fas fa-search me-2"></i>Browse Properties
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
-                    {% else %}
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>You don't have any bookings yet.
-                    </div>
-                    {% endif %}
                 </div>
 
                 <!-- Reviews Tab -->
                 <div class="tab-pane fade" id="reviews">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3>My Reviews</h3>
-                    </div>
-                    {% if reviews %}
-                    <div class="row">
-                        {% for review in reviews %}
-                        <div class="col-md-6 mb-4">
-                            <div class="card shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ review.property.title }}</h5>
-                                    <div class="mb-2">
-                                        {% for i in "12345" %}
-                                        <i class="fas fa-star {% if forloop.counter <= review.rating %}text-warning{% else %}text-muted{% endif %}"></i>
-                                        {% endfor %}
-                                    </div>
-                                    <p class="card-text">{{ review.comment }}</p>
-                                    <p class="text-muted small mb-0">Posted on {{ review.created_at|date:"M d, Y" }}</p>
-                                </div>
-                                <div class="card-footer bg-transparent">
-                                    <a href="{% url 'edit_review' review.pk %}" class="btn btn-outline-primary btn-sm me-2">
-                                        <i class="fas fa-edit me-2"></i>Edit
-                                    </a>
-                                    <form method="post" action="{% url 'delete_review' review.pk %}" class="d-inline">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-outline-danger btn-sm">
-                                            <i class="fas fa-trash me-2"></i>Delete
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
+                    <div class="content-card">
+                        <div class="content-header">
+                            <h3><i class="fas fa-star me-2"></i>My Reviews</h3>
                         </div>
-                        {% endfor %}
+                        <div class="content-body">
+                            {% if reviews %}
+                            <div class="row">
+                                {% for review in reviews %}
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ review.property.title }}</h5>
+                                            <div class="mb-2">
+                                                {% for i in "12345" %}
+                                                <i class="fas fa-star {% if forloop.counter <= review.rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                                {% endfor %}
+                                            </div>
+                                            <p class="card-text">{{ review.comment }}</p>
+                                            <p class="text-muted small mb-0">Posted on {{ review.created_at|date:"M d, Y" }}</p>
+                                        </div>
+                                        <div class="card-footer bg-transparent">
+                                            <a href="{% url 'edit_review' review.pk %}" class="btn btn-outline-primary btn-sm me-2">
+                                                <i class="fas fa-edit me-2"></i>Edit
+                                            </a>
+                                            <form method="post" action="{% url 'delete_review' review.pk %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                    <i class="fas fa-trash me-2"></i>Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="alert-modern alert-info-modern text-center">
+                                <i class="fas fa-info-circle me-2"></i>You haven't written any reviews yet.
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
-                    {% else %}
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>You haven't written any reviews yet.
-                    </div>
-                    {% endif %}
                 </div>
 
                 <!-- Properties Tab (Host/Admin Only) -->
                 {% if user_role == 'host' or user_role == 'admin' %}
                 <div class="tab-pane fade" id="properties">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3>My Properties</h3>
-                        <a href="{% url 'create_listing' %}" class="btn btn-primary">
-                            <i class="fas fa-plus me-2"></i>Add New Property
-                        </a>
-                    </div>
-                    {% if managed_properties %}
-                    <div class="row">
-                        {% for property in managed_properties %}
-                        <div class="col-md-6 mb-4">
-                            <div class="card shadow-sm h-100">
-                                {% if property.images.exists %}
-                                <img src="{{ property.images.first.image.url }}" class="card-img-top" alt="{{ property.title }}" style="height: 200px; object-fit: cover;">
-                                {% endif %}
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ property.title }}</h5>
-                                    <p class="text-muted mb-2">
-                                        <i class="fas fa-map-marker-alt me-2"></i>{{ property.location }}
-                                    </p>
-                                    <p class="mb-1"><strong>Type:</strong> {{ property.get_property_type_display }}</p>
-                                    <p class="mb-1"><strong>Price:</strong> ${{ property.price_per_night }}/night</p>
-                                    <p class="mb-0"><strong>Max Guests:</strong> {{ property.max_guests }}</p>
+                    <div class="content-card">
+                        <div class="content-header d-flex justify-content-between align-items-center">
+                            <h3><i class="fas fa-home me-2"></i>My Properties</h3>
+                            <a href="{% url 'create_listing' %}" class="btn-modern">
+                                <i class="fas fa-plus me-2"></i>Add New Property
+                            </a>
+                        </div>
+                        <div class="content-body">
+                            {% if managed_properties %}
+                            <div class="row">
+                                {% for property in managed_properties %}
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        {% if property.images.exists %}
+                                        <img src="{{ property.images.first.image.url }}" class="card-img-top" alt="{{ property.title }}" style="height: 200px; object-fit: cover;">
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ property.title }}</h5>
+                                            <p class="text-muted mb-2">
+                                                <i class="fas fa-map-marker-alt me-2"></i>{{ property.location }}
+                                            </p>
+                                            <p class="mb-1"><strong>Type:</strong> {{ property.get_property_type_display }}</p>
+                                            <p class="mb-1"><strong>Price:</strong> ${{ property.price_per_night }}/night</p>
+                                            <p class="mb-0"><strong>Max Guests:</strong> {{ property.max_guests }}</p>
+                                        </div>
+                                        <div class="card-footer bg-transparent">
+                                            <a href="{% url 'edit_listing' property.pk %}" class="btn btn-outline-primary btn-sm me-2">
+                                                <i class="fas fa-edit me-2"></i>Edit
+                                            </a>
+                                            <a href="{% url 'property_bookings' property.pk %}" class="btn btn-outline-info btn-sm me-2">
+                                                <i class="fas fa-calendar me-2"></i>Bookings
+                                            </a>
+                                            <form method="post" action="{% url 'delete_listing' property.pk %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                    <i class="fas fa-trash me-2"></i>Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="card-footer bg-transparent">
-                                    <a href="{% url 'edit_listing' property.pk %}" class="btn btn-outline-primary btn-sm me-2">
-                                        <i class="fas fa-edit me-2"></i>Edit
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="alert-modern alert-info-modern text-center">
+                                <i class="fas fa-info-circle me-2"></i>You haven't listed any properties yet.
+                                <div class="mt-3">
+                                    <a href="{% url 'create_listing' %}" class="btn-modern">
+                                        <i class="fas fa-plus me-2"></i>Create Your First Listing
                                     </a>
-                                    <a href="{% url 'property_bookings' property.pk %}" class="btn btn-outline-info btn-sm me-2">
-                                        <i class="fas fa-calendar me-2"></i>Bookings
-                                    </a>
-                                    <form method="post" action="{% url 'delete_listing' property.pk %}" class="d-inline">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-outline-danger btn-sm">
-                                            <i class="fas fa-trash me-2"></i>Delete
-                                        </button>
-                                    </form>
                                 </div>
                             </div>
+                            {% endif %}
                         </div>
-                        {% endfor %}
                     </div>
-                    {% else %}
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>You haven't listed any properties yet.
-                    </div>
-                    {% endif %}
                 </div>
                 {% endif %}
 
                 <!-- Host Applications Tab (Admin Only) -->
                 {% if user_role == 'admin' %}
                 <div class="tab-pane fade" id="applications">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3>Pending Host Applications</h3>
+                    <div class="content-card">
+                        <div class="content-header">
+                            <h3><i class="fas fa-user-check me-2"></i>Pending Host Applications</h3>
+                        </div>
+                        <div class="content-body">
+                            {% if pending_applications %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Applicant</th>
+                                            <th>Business Name</th>
+                                            <th>Submitted</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for application in pending_applications %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="{{ application.user.userprofile.avatar.url|default:'https://via.placeholder.com/40' }}" 
+                                                         alt="{{ application.user.get_full_name }}" 
+                                                         class="rounded-circle me-2"
+                                                         style="width: 40px; height: 40px; object-fit: cover;">
+                                                    <div>
+                                                        <div>{{ application.user.get_full_name }}</div>
+                                                        <small class="text-muted">{{ application.user.email }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ application.business_name }}</td>
+                                            <td>{{ application.created_at|date:"M d, Y" }}</td>
+                                            <td>
+                                                <form method="post" action="{% url 'admin:app_hostapplication_changelist' %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="approve_applications">
+                                                    <input type="hidden" name="_selected_action" value="{{ application.pk }}">
+                                                    <button type="submit" class="btn btn-success btn-sm me-2">
+                                                        <i class="fas fa-check me-2"></i>Approve
+                                                    </button>
+                                                </form>
+                                                <form method="post" action="{% url 'admin:app_hostapplication_changelist' %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="reject_applications">
+                                                    <input type="hidden" name="_selected_action" value="{{ application.pk }}">
+                                                    <button type="submit" class="btn btn-danger btn-sm">
+                                                        <i class="fas fa-times me-2"></i>Reject
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="alert-modern alert-info-modern text-center">
+                                <i class="fas fa-info-circle me-2"></i>No pending host applications.
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
-                    {% if pending_applications %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Applicant</th>
-                                    <th>Business Name</th>
-                                    <th>Submitted</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for application in pending_applications %}
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="{{ application.user.userprofile.avatar.url|default:'https://via.placeholder.com/40' }}" 
-                                                 alt="{{ application.user.get_full_name }}" 
-                                                 class="rounded-circle me-2"
-                                                 style="width: 40px; height: 40px; object-fit: cover;">
-                                            <div>
-                                                <div>{{ application.user.get_full_name }}</div>
-                                                <small class="text-muted">{{ application.user.email }}</small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>{{ application.business_name }}</td>
-                                    <td>{{ application.created_at|date:"M d, Y" }}</td>
-                                    <td>
-                                        <form method="post" action="{% url 'admin:app_hostapplication_changelist' %}" class="d-inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="approve_applications">
-                                            <input type="hidden" name="_selected_action" value="{{ application.pk }}">
-                                            <button type="submit" class="btn btn-success btn-sm me-2">
-                                                <i class="fas fa-check me-2"></i>Approve
-                                            </button>
-                                        </form>
-                                        <form method="post" action="{% url 'admin:app_hostapplication_changelist' %}" class="d-inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="reject_applications">
-                                            <input type="hidden" name="_selected_action" value="{{ application.pk }}">
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                <i class="fas fa-times me-2"></i>Reject
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>No pending host applications.
-                    </div>
-                    {% endif %}
                 </div>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_css %}
-<style>
-    .list-group-item {
-        border: none;
-        border-radius: 8px !important;
-        margin-bottom: 5px;
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Active tab management
+    const navLinks = document.querySelectorAll('.nav-link-modern[data-bs-toggle="list"]');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all nav links and tab panes
+            navLinks.forEach(nav => nav.classList.remove('active'));
+            tabPanes.forEach(pane => {
+                pane.classList.remove('show', 'active');
+            });
+            
+            // Add active class to clicked nav link
+            this.classList.add('active');
+            
+            // Show corresponding tab pane
+            const targetId = this.getAttribute('href').substring(1);
+            const targetPane = document.getElementById(targetId);
+            if (targetPane) {
+                targetPane.classList.add('show', 'active');
+            }
+        });
+    });
+    
+    // Animate stats on scroll
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+                
+                // Animate numbers
+                const statNumber = entry.target.querySelector('.stat-number');
+                if (statNumber && !statNumber.classList.contains('animated')) {
+                    animateNumber(statNumber);
+                    statNumber.classList.add('animated');
+                }
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.stat-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.6s ease';
+        observer.observe(card);
+    });
+    
+    function animateNumber(element) {
+        const finalNumber = element.textContent;
+        if (isNaN(parseInt(finalNumber))) return;
+        
+        const startNumber = 0;
+        const endNumber = parseInt(finalNumber);
+        const duration = 1000;
+        const increment = endNumber / (duration / 16);
+        
+        let currentNumber = startNumber;
+        const timer = setInterval(() => {
+            currentNumber += increment;
+            if (currentNumber >= endNumber) {
+                element.textContent = finalNumber;
+                clearInterval(timer);
+            } else {
+                element.textContent = Math.floor(currentNumber);
+            }
+        }, 16);
     }
     
-    .list-group-item:hover {
-        background-color: #f8f9fa;
+    // Smooth transitions for cards
+    document.querySelectorAll('.content-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.6s ease';
+        
+        setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 200);
+    });
+    
+    // Confirmation for delete actions
+    document.querySelectorAll('form[action*="delete"]').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            if (!confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
+                e.preventDefault();
+            }
+        });
+    });
+    
+    // Loading state for buttons
+    document.querySelectorAll('button[type="submit"]').forEach(button => {
+        button.addEventListener('click', function() {
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+            this.disabled = true;
+            
+            // Re-enable after 5 seconds (fallback)
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+            }, 5000);
+        });
+    });
+    
+    // Auto-refresh for admin applications
+    {% if user_role == 'admin' %}
+    setInterval(() => {
+        const applicationsTab = document.getElementById('applications');
+        if (applicationsTab && applicationsTab.classList.contains('active')) {
+            // Refresh applications every 30 seconds if admin is viewing the tab
+            location.reload();
+        }
+    }, 30000);
+    {% endif %}
+    
+    // Notification for new messages/updates
+    function checkForUpdates() {
+        // This would typically make an AJAX call to check for updates
+        // For now, we'll just simulate with local storage
+        const lastCheck = localStorage.getItem('lastUpdateCheck');
+        const now = Date.now();
+        
+        if (!lastCheck || now - parseInt(lastCheck) > 300000) { // 5 minutes
+            localStorage.setItem('lastUpdateCheck', now.toString());
+            
+            // Show notification if there are updates
+            // This is just a placeholder - implement actual update checking
+            // showUpdateNotification();
+        }
     }
     
-    .list-group-item.active {
-        background-color: var(--primary);
-        border-color: var(--primary);
-    }
-    
-    .card {
-        border: none;
-        border-radius: 12px;
-    }
-    
-    .btn {
-        border-radius: 8px;
-    }
-    
-    .badge {
-        padding: 0.5em 1em;
-        border-radius: 6px;
-    }
-</style>
-{% endblock %} 
+    checkForUpdates();
+    setInterval(checkForUpdates, 300000); // Check every 5 minutes
+});
+</script>
+{% endblock %}
