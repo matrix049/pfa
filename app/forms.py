@@ -1,5 +1,5 @@
 from django import forms
-from .models import HostApplication, UserProfile
+from .models import HostApplication, UserProfile, Property, PropertyImage
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 
@@ -26,6 +26,59 @@ class HostApplicationForm(forms.ModelForm):
             'description': 'Include information about your properties and hosting experience'
         }
 
+class PropertyCreationForm(forms.ModelForm):
+    # Additional fields for the become host flow
+    photos = forms.FileField(
+        widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        help_text='Select multiple images for your property',
+        required=True
+    )
+    
+    class Meta:
+        model = Property
+        fields = [
+            'title', 'description', 'property_type', 'space_type', 'location',
+            'price_per_night', 'bedrooms', 'bathrooms', 'beds', 'max_guests',
+            'cleaning_fee', 'service_fee', 'highlights'
+        ]
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ex: Cozy apartment in city center'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Describe your property, amenities, and what makes it special...'
+            }),
+            'property_type': forms.Select(attrs={'class': 'form-control'}),
+            'space_type': forms.Select(attrs={'class': 'form-control'}),
+            'location': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Full address including city and country'
+            }),
+            'price_per_night': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': '150',
+                'step': '0.01'
+            }),
+            'bedrooms': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'bathrooms': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'beds': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'max_guests': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'cleaning_fee': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': '50',
+                'step': '0.01'
+            }),
+            'service_fee': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': '30',
+                'step': '0.01'
+            }),
+            'highlights': forms.HiddenInput(),
+        }
+
 class ProfileForm(forms.ModelForm):
     first_name = forms.CharField(
         max_length=30, required=True,
@@ -42,11 +95,60 @@ class ProfileForm(forms.ModelForm):
     
     class Meta:
         model = UserProfile
-        fields = ['avatar', 'phone_number', 'bio']
+        fields = [
+            'avatar', 'phone_number', 'bio', 'date_of_birth', 'address', 
+            'city', 'country', 'language', 'currency', 'email_notifications', 
+            'sms_notifications', 'marketing_emails'
+        ]
         widgets = {
-            'bio': forms.Textarea(attrs={'rows': 4, 'class': 'form-control', 'placeholder': 'Tell us a bit about yourself'}),
-            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}),
-            'avatar': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'})
+            'bio': forms.Textarea(attrs={
+                'rows': 4, 
+                'class': 'form-control', 
+                'placeholder': 'Tell us a bit about yourself'
+            }),
+            'phone_number': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Phone Number'
+            }),
+            'avatar': forms.FileInput(attrs={
+                'class': 'form-control', 
+                'accept': 'image/*'
+            }),
+            'date_of_birth': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'address': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Full address'
+            }),
+            'city': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'City'
+            }),
+            'country': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Country'
+            }),
+            'language': forms.Select(choices=[
+                ('English', 'English'),
+                ('French', 'French'),
+                ('Spanish', 'Spanish'),
+                ('Arabic', 'Arabic'),
+                ('German', 'German'),
+                ('Other', 'Other'),
+            ], attrs={'class': 'form-control'}),
+            'currency': forms.Select(choices=[
+                ('USD', 'USD'),
+                ('EUR', 'EUR'),
+                ('GBP', 'GBP'),
+                ('MAD', 'MAD'),
+                ('CAD', 'CAD'),
+            ], attrs={'class': 'form-control'}),
+            'email_notifications': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'sms_notifications': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'marketing_emails': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
         
     def __init__(self, *args, **kwargs):
@@ -102,4 +204,4 @@ class RegistrationForm(UserCreationForm):
                 profile = user.userprofile
                 profile.avatar = avatar
                 profile.save()
-        return user 
+        return user
