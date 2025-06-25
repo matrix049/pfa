@@ -466,7 +466,19 @@
                         <form method="post" enctype="multipart/form-data" id="profileForm">
                             {% csrf_token %}
                             
-                            <!-- Hidden Avatar Input -->
+                            <!-- Avatar Input (Django form field, visually hidden for custom styling) -->
+                            <div style="display:none;">
+                                {{ form.avatar }}
+                            </div>
+                            <!-- Show avatar field errors if any -->
+                            {% if form.avatar.errors %}
+                                <div class="alert-modern alert-danger-modern">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    {{ form.avatar.errors|striptags }}
+                                </div>
+                            {% endif %}
+
+                            <!-- Hidden Avatar Input (for JS trigger, keep for UX) -->
                             <input type="file" id="id_avatar" name="avatar" class="avatar-input" accept="image/*">
 
                             <!-- Personal Information -->

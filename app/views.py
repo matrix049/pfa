@@ -12,6 +12,8 @@ from django.core.exceptions import ValidationError
 from .forms import ProfileForm, PropertyCreationForm
 from .forms import RegistrationForm
 from .forms import HostApplicationForm
+from django.core.paginator import Paginator
+from django.db.models import Q
 
 def home(request):
     featured_properties = Property.objects.all()[:6]
@@ -19,11 +21,75 @@ def home(request):
 
 def properties(request):
     properties = Property.objects.prefetch_related('images', 'amenities').all()
-    return render(request, 'properties.html', {'properties': properties})
+    property_types = Property._meta.get_field('property_type').choices
+
+    # Filtering
+    location = request.GET.get('location')
+    if location:
+        properties = properties.filter(location__icontains=location)
+
+    min_price = request.GET.get('min_price')
+    if min_price:
+        properties = properties.filter(price_per_night__gte=min_price)
+    max_price = request.GET.get('max_price')
+    if max_price:
+        properties = properties.filter(price_per_night__lte=max_price)
+
+    type_filters = request.GET.getlist('type')
+    if type_filters:
+        properties = properties.filter(property_type__in=type_filters)
+
+    space_types = request.GET.getlist('space_type')
+    if space_types:
+        properties = properties.filter(space_type__in=space_types)
+
+    amenities = request.GET.getlist('amenities')
+    if amenities:
+        for amenity in amenities:
+            properties = properties.filter(amenities__name__iexact=amenity)
+
+    bedrooms = request.GET.get('bedrooms')
+    if bedrooms:
+        if bedrooms == '4':
+            properties = properties.filter(bedrooms__gte=4)
+        else:
+            properties = properties.filter(bedrooms=bedrooms)
+
+    if request.GET.get('instant_book'):
+        properties = properties.filter(instant_book=True)
+    if request.GET.get('superhost'):
+        properties = properties.filter(host__userprofile__role='host', host__userprofile__is_superhost=True)
+
+    guests = request.GET.get('guests')
+    if guests:
+        properties = properties.filter(max_guests__gte=guests)
+
+    # Sorting
+    sort = request.GET.get('sort')
+    if sort == 'price_asc':
+        properties = properties.order_by('price_per_night')
+    elif sort == 'price_desc':
+        properties = properties.order_by('-price_per_night')
+    elif sort == 'rating':
+        # Assuming you have an average rating field or annotate
+        properties = properties.order_by('-average_rating')
+    elif sort == 'newest':
+        properties = properties.order_by('-id')
+
+    # Pagination
+    paginator = Paginator(properties, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'properties.html', {
+        'properties': page_obj,
+        'property_types': property_types,
+        'request': request,
+    })
 
 def property_detail(request, pk):
     property = get_object_or_404(
-        Property.objects.prefetch_related('images', 'amenities', 'reviews'),
+        Property.objects.prefetch_related('images', 'amenities', 'reviews', 'host__userprofile'),
         pk=pk
     )
     return render(request, 'property_detail.html', {
@@ -169,13 +235,20 @@ def edit_profile(request):
         profile = UserProfile.objects.create(user=user)
 
     if request.method == 'POST':
-        form = ProfileForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Profile updated successfully!')
-            return redirect('dashboard')
-        else:
-            messages.error(request, 'Please correct the errors below.')
+        try:
+            form = ProfileForm(request.POST, request.FILES, instance=profile)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Profile updated successfully!')
+                return redirect('dashboard')
+            else:
+                messages.error(request, 'Please correct the errors below.')
+                # Debugging: print form errors to console
+                print('ProfileForm errors:', form.errors)
+        except Exception as e:
+            messages.error(request, f'An error occurred while updating your profile: {str(e)}')
+            # Debugging: print exception to console
+            print('Exception in edit_profile:', str(e))
     else:
         form = ProfileForm(instance=profile)
 

@@ -1,169 +1,1353 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Properties - StayBooking{% endblock %}
 
+{% block extra_css %}
+<style>
+:root {
+    --properties-primary: #667eea;
+    --properties-secondary: #764ba2;
+    --properties-accent: #f093fb;
+    --properties-success: #4facfe;
+    --properties-warning: #f8b500;
+    --properties-danger: #ff6b6b;
+    --properties-light: #f8f9fa;
+    --properties-dark: #2d3748;
+    --properties-gray: #718096;
+    --properties-border: #e2e8f0;
+    --properties-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    --properties-shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.15);
+    --properties-radius: 20px;
+    --properties-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hero Search Section */
+.search-hero {
+    background: linear-gradient(135deg, var(--properties-primary) 0%, var(--properties-secondary) 100%);
+    padding: 3rem 0;
+    margin-bottom: 3rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.search-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" fill-opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" fill-opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" fill-opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    pointer-events: none;
+}
+
+.search-hero .search-container {
+    position: relative;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.search-input {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    backdrop-filter: blur(5px);
+    transition: var(--properties-transition);
+}
+
+.search-input:focus {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.search-btn {
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    color: white;
+    transition: var(--properties-transition);
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.search-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+    color: white;
+}
+
+/* Filters Sidebar */
+.filters-sidebar {
+    background: white;
+    border-radius: var(--properties-radius);
+    box-shadow: var(--properties-shadow);
+    padding: 2rem;
+    height: fit-content;
+    position: sticky;
+    top: 120px;
+    border: 1px solid var(--properties-border);
+}
+
+.filter-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--properties-border);
+}
+
+.filter-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.filter-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--properties-dark);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-title i {
+    color: var(--properties-primary);
+    font-size: 1rem;
+}
+
+.price-range-inputs {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.price-input {
+    flex: 1;
+    border: 2px solid var(--properties-border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: var(--properties-transition);
+}
+
+.price-input:focus {
+    border-color: var(--properties-primary);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    transition: var(--properties-transition);
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+}
+
+.filter-checkbox:hover {
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.filter-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--properties-primary);
+}
+
+.filter-checkbox label {
+    margin: 0;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--properties-dark);
+}
+
+.filter-select {
+    width: 100%;
+    border: 2px solid var(--properties-border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: var(--properties-transition);
+    background: white;
+}
+
+.filter-select:focus {
+    border-color: var(--properties-primary);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.apply-filters-btn {
+    background: var(--properties-primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+    width: 100%;
+    transition: var(--properties-transition);
+}
+
+.apply-filters-btn:hover {
+    background: var(--properties-secondary);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.clear-filters-btn {
+    background: transparent;
+    color: var(--properties-gray);
+    border: 2px solid var(--properties-border);
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    width: 100%;
+    margin-bottom: 1rem;
+    transition: var(--properties-transition);
+}
+
+.clear-filters-btn:hover {
+    border-color: var(--properties-danger);
+    color: var(--properties-danger);
+}
+
+/* Properties Header */
+.properties-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1.5rem 2rem;
+    background: white;
+    border-radius: var(--properties-radius);
+    box-shadow: var(--properties-shadow);
+}
+
+.results-info {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--properties-dark);
+}
+
+.sort-dropdown {
+    position: relative;
+}
+
+.sort-btn {
+    background: white;
+    border: 2px solid var(--properties-border);
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    color: var(--properties-dark);
+    transition: var(--properties-transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sort-btn:hover {
+    border-color: var(--properties-primary);
+    color: var(--properties-primary);
+}
+
+.sort-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--properties-shadow);
+    border: 1px solid var(--properties-border);
+    min-width: 200px;
+    z-index: 1000;
+    display: none;
+    padding: 0.5rem;
+}
+
+.sort-dropdown-menu.show {
+    display: block;
+}
+
+.sort-option {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: var(--properties-dark);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: var(--properties-transition);
+}
+
+.sort-option:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--properties-primary);
+}
+
+/* Property Cards */
+.properties-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.property-card {
+    background: white;
+    border-radius: var(--properties-radius);
+    overflow: hidden;
+    box-shadow: var(--properties-shadow);
+    transition: var(--properties-transition);
+    border: 1px solid var(--properties-border);
+    position: relative;
+}
+
+.property-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--properties-shadow-hover);
+}
+
+.property-image-container {
+    position: relative;
+    height: 280px;
+    overflow: hidden;
+}
+
+.property-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.property-card:hover .property-image {
+    transform: scale(1.1);
+}
+
+.property-badges {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 3;
+}
+
+.property-badge {
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+}
+
+.property-badge.featured {
+    background: linear-gradient(135deg, var(--properties-warning), #FFD93D);
+}
+
+.property-badge.superhost {
+    background: linear-gradient(135deg, var(--properties-success), #00f2fe);
+}
+
+.wishlist-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--properties-transition);
+    backdrop-filter: blur(10px);
+    z-index: 3;
+}
+
+.wishlist-btn:hover {
+    background: white;
+    transform: scale(1.1);
+}
+
+.wishlist-btn i {
+    color: var(--properties-danger);
+    font-size: 1.1rem;
+}
+
+.property-content {
+    padding: 1.5rem;
+}
+
+.property-header {
+    display: flex;
+    justify-content: between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.property-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--properties-dark);
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+    flex: 1;
+}
+
+.property-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.property-rating i {
+    color: #F6AD55;
+}
+
+.property-location {
+    color: var(--properties-gray);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.property-location i {
+    color: var(--properties-primary);
+    font-size: 0.9rem;
+}
+
+.property-features {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: var(--properties-gray);
+}
+
+.property-feature {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.property-feature i {
+    color: var(--properties-primary);
+}
+
+.property-amenities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.amenity-tag {
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--properties-primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.property-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--properties-border);
+}
+
+.property-price {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--properties-dark);
+}
+
+.property-price .currency {
+    font-size: 1rem;
+}
+
+.property-price .per-night {
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: var(--properties-gray);
+}
+
+.view-details-btn {
+    background: var(--properties-primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: var(--properties-transition);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.view-details-btn:hover {
+    background: var(--properties-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+/* Pagination */
+.pagination-modern {
+    display: flex;
+    justify-content: center;
+    margin: 3rem 0;
+}
+
+.pagination-modern .pagination {
+    background: white;
+    border-radius: 15px;
+    box-shadow: var(--properties-shadow);
+    padding: 0.5rem;
+    border: 1px solid var(--properties-border);
+}
+
+.pagination-modern .page-item {
+    margin: 0 0.25rem;
+}
+
+.pagination-modern .page-link {
+    border: none;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-weight: 500;
+    color: var(--properties-dark);
+    transition: var(--properties-transition);
+}
+
+.pagination-modern .page-link:hover {
+    background: var(--properties-primary);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.pagination-modern .page-item.active .page-link {
+    background: var(--properties-primary);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: var(--properties-radius);
+    box-shadow: var(--properties-shadow);
+}
+
+.empty-state-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--properties-primary), var(--properties-secondary));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    color: white;
+    font-size: 2rem;
+}
+
+.empty-state h3 {
+    color: var(--properties-dark);
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: var(--properties-gray);
+    margin-bottom: 2rem;
+}
+
+/* Map View Toggle */
+.view-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.toggle-btn {
+    background: white;
+    border: 2px solid var(--properties-border);
+    border-radius: 10px;
+    padding: 0.75rem 1.25rem;
+    font-weight: 500;
+    color: var(--properties-dark);
+    transition: var(--properties-transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toggle-btn.active {
+    background: var(--properties-primary);
+    border-color: var(--properties-primary);
+    color: white;
+}
+
+.toggle-btn:hover {
+    border-color: var(--properties-primary);
+    color: var(--properties-primary);
+}
+
+.toggle-btn.active:hover {
+    color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .properties-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .search-hero {
+        padding: 2rem 0;
+    }
+    
+    .search-hero .search-container {
+        padding: 1.5rem;
+    }
+    
+    .filters-sidebar {
+        position: static;
+        margin-bottom: 2rem;
+    }
+    
+    .properties-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .properties-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .property-card {
+        max-width: 100%;
+    }
+    
+    .property-features {
+        justify-content: center;
+    }
+    
+    .view-toggle {
+        justify-content: center;
+    }
+}
+
+/* Loading Animation */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid var(--properties-border);
+    border-top-color: var(--properties-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Animations */
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.6s ease-out;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <!-- Filters Sidebar -->
-    <div class="col-md-3 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title mb-4">Filters</h5>
-                <form method="get">
+<!-- Enhanced Search Hero -->
+<section class="search-hero">
+    <div class="container">
+        <div class="search-container">
+            <form method="get" id="searchForm">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label text-white-50 small fw-bold">WHERE</label>
+                        <input type="text" name="location" class="form-control search-input" 
+                               placeholder="Search destinations" value="{{ request.GET.location }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label text-white-50 small fw-bold">CHECK IN</label>
+                        <input type="date" name="check_in" class="form-control search-input" 
+                               value="{{ request.GET.check_in }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label text-white-50 small fw-bold">CHECK OUT</label>
+                        <input type="date" name="check_out" class="form-control search-input" 
+                               value="{{ request.GET.check_out }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label text-white-50 small fw-bold">GUESTS</label>
+                        <select name="guests" class="form-control search-input">
+                            <option value="">Any</option>
+                            {% for i in "123456789"|make_list %}
+                            <option value="{{ forloop.counter }}" {% if request.GET.guests == forloop.counter|stringformat:"s" %}selected{% endif %}>
+                                {{ forloop.counter }} guest{{ forloop.counter|pluralize }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn search-btn w-100">
+                            <i class="fas fa-search me-2"></i>Search Properties
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <div class="row">
+        <!-- Enhanced Filters Sidebar -->
+        <div class="col-lg-3 col-md-4">
+            <div class="filters-sidebar slide-in-left">
+                <form method="get" id="filtersForm">
+                    <!-- Preserve search params -->
+                    {% if request.GET.location %}
+                    <input type="hidden" name="location" value="{{ request.GET.location }}">
+                    {% endif %}
+                    {% if request.GET.check_in %}
+                    <input type="hidden" name="check_in" value="{{ request.GET.check_in }}">
+                    {% endif %}
+                    {% if request.GET.check_out %}
+                    <input type="hidden" name="check_out" value="{{ request.GET.check_out }}">
+                    {% endif %}
+                    {% if request.GET.guests %}
+                    <input type="hidden" name="guests" value="{{ request.GET.guests }}">
+                    {% endif %}
+                    
+                    <h5 class="filter-title mb-3">
+                        <i class="fas fa-filter"></i>Filters
+                    </h5>
+                    
+                    <button type="button" class="clear-filters-btn" onclick="clearAllFilters()">
+                        <i class="fas fa-times me-2"></i>Clear All Filters
+                    </button>
+
                     <!-- Price Range -->
-                    <div class="mb-4">
-                        <label class="form-label">Price Range</label>
-                        <div class="d-flex gap-2">
-                            <input type="number" name="min_price" class="form-control" placeholder="Min" value="{{ request.GET.min_price }}">
-                            <input type="number" name="max_price" class="form-control" placeholder="Max" value="{{ request.GET.max_price }}">
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="fas fa-dollar-sign"></i>Price Range
+                        </h6>
+                        <div class="price-range-inputs">
+                            <input type="number" name="min_price" class="price-input" 
+                                   placeholder="Min $" value="{{ request.GET.min_price }}">
+                            <input type="number" name="max_price" class="price-input" 
+                                   placeholder="Max $" value="{{ request.GET.max_price }}">
                         </div>
                     </div>
 
                     <!-- Property Type -->
-                    <div class="mb-4">
-                        <label class="form-label">Property Type</label>
-                        <div class="form-check">
-                            <input type="checkbox" name="type" value="apartment" class="form-check-input" {% if 'apartment' in request.GET.type %}checked{% endif %}>
-                            <label class="form-check-label">Apartment</label>
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="fas fa-home"></i>Property Type
+                        </h6>
+                        {% for type_choice in property_types %}
+                        <div class="filter-checkbox">
+                            <input type="checkbox" name="type" value="{{ type_choice.0 }}" 
+                                   id="type_{{ type_choice.0 }}"
+                                   {% if type_choice.0 in request.GET.getlist:'type' %}checked{% endif %}>
+                            <label for="type_{{ type_choice.0 }}">{{ type_choice.1 }}</label>
                         </div>
-                        <div class="form-check">
-                            <input type="checkbox" name="type" value="house" class="form-check-input" {% if 'house' in request.GET.type %}checked{% endif %}>
-                            <label class="form-check-label">House</label>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Space Type -->
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="fas fa-door-open"></i>Space Type
+                        </h6>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" name="space_type" value="entire" 
+                                   id="space_entire"
+                                   {% if 'entire' in request.GET.getlist:'space_type' %}checked{% endif %}>
+                            <label for="space_entire">Entire Place</label>
                         </div>
-                        <div class="form-check">
-                            <input type="checkbox" name="type" value="villa" class="form-check-input" {% if 'villa' in request.GET.type %}checked{% endif %}>
-                            <label class="form-check-label">Villa</label>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" name="space_type" value="room" 
+                                   id="space_room"
+                                   {% if 'room' in request.GET.getlist:'space_type' %}checked{% endif %}>
+                            <label for="space_room">Private Room</label>
                         </div>
                     </div>
 
                     <!-- Amenities -->
-                    <div class="mb-4">
-                        <label class="form-label">Amenities</label>
-                        <div class="form-check">
-                            <input type="checkbox" name="amenities" value="wifi" class="form-check-input" {% if 'wifi' in request.GET.amenities %}checked{% endif %}>
-                            <label class="form-check-label">WiFi</label>
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="fas fa-star"></i>Amenities
+                        </h6>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" name="amenities" value="wifi" 
+                                   id="amenity_wifi"
+                                   {% if 'wifi' in request.GET.getlist:'amenities' %}checked{% endif %}>
+                            <label for="amenity_wifi">WiFi</label>
                         </div>
-                        <div class="form-check">
-                            <input type="checkbox" name="amenities" value="pool" class="form-check-input" {% if 'pool' in request.GET.amenities %}checked{% endif %}>
-                            <label class="form-check-label">Pool</label>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" name="amenities" value="kitchen" 
+                                   id="amenity_kitchen"
+                                   {% if 'kitchen' in request.GET.getlist:'amenities' %}checked{% endif %}>
+                            <label for="amenity_kitchen">Kitchen</label>
                         </div>
-                        <div class="form-check">
-                            <input type="checkbox" name="amenities" value="kitchen" class="form-check-input" {% if 'kitchen' in request.GET.amenities %}checked{% endif %}>
-                            <label class="form-check-label">Kitchen</label>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" name="amenities" value="parking" 
+                                   id="amenity_parking"
+                                   {% if 'parking' in request.GET.getlist:'amenities' %}checked{% endif %}>
+                            <label for="amenity_parking">Parking</label>
                         </div>
-                        <div class="form-check">
-                            <input type="checkbox" name="amenities" value="parking" class="form-check-input" {% if 'parking' in request.GET.amenities %}checked{% endif %}>
-                            <label class="form-check-label">Parking</label>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" name="amenities" value="pool" 
+                                   id="amenity_pool"
+                                   {% if 'pool' in request.GET.getlist:'amenities' %}checked{% endif %}>
+                            <label for="amenity_pool">Swimming Pool</label>
+                        </div>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" name="amenities" value="air_conditioning" 
+                                   id="amenity_ac"
+                                   {% if 'air_conditioning' in request.GET.getlist:'amenities' %}checked{% endif %}>
+                            <label for="amenity_ac">Air Conditioning</label>
                         </div>
                     </div>
 
                     <!-- Bedrooms -->
-                    <div class="mb-4">
-                        <label class="form-label">Bedrooms</label>
-                        <select name="bedrooms" class="form-select">
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="fas fa-bed"></i>Bedrooms
+                        </h6>
+                        <select name="bedrooms" class="filter-select">
                             <option value="">Any</option>
-                            <option value="1" {% if request.GET.bedrooms == '1' %}selected{% endif %}>1</option>
-                            <option value="2" {% if request.GET.bedrooms == '2' %}selected{% endif %}>2</option>
-                            <option value="3" {% if request.GET.bedrooms == '3' %}selected{% endif %}>3</option>
-                            <option value="4+" {% if request.GET.bedrooms == '4+' %}selected{% endif %}>4+</option>
+                            <option value="1" {% if request.GET.bedrooms == '1' %}selected{% endif %}>1 Bedroom</option>
+                            <option value="2" {% if request.GET.bedrooms == '2' %}selected{% endif %}>2 Bedrooms</option>
+                            <option value="3" {% if request.GET.bedrooms == '3' %}selected{% endif %}>3 Bedrooms</option>
+                            <option value="4" {% if request.GET.bedrooms == '4' %}selected{% endif %}>4+ Bedrooms</option>
                         </select>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                    <!-- Instant Book -->
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="fas fa-bolt"></i>Booking Options
+                        </h6>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" name="instant_book" value="true" 
+                                   id="instant_book"
+                                   {% if request.GET.instant_book %}checked{% endif %}>
+                            <label for="instant_book">Instant Book</label>
+                        </div>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" name="superhost" value="true" 
+                                   id="superhost"
+                                   {% if request.GET.superhost %}checked{% endif %}>
+                            <label for="superhost">Superhost Only</label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="apply-filters-btn">
+                        <i class="fas fa-search me-2"></i>Apply Filters
+                    </button>
                 </form>
             </div>
         </div>
-    </div>
 
-    <!-- Property Listings -->
-    <div class="col-md-9">
-        <!-- Search Results Info -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">{{ properties|length }} Properties Found</h2>
-            <div class="dropdown">
-                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    Sort by
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&sort=price_asc">Price: Low to High</a></li>
-                    <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&sort=price_desc">Price: High to Low</a></li>
-                    <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&sort=rating">Rating</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Property Cards -->
-        <div class="row">
-            {% for property in properties %}
-            <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="position-relative">
-                        {% for image in property.images.all %}
-                            {% if image.is_primary %}
-                                <img src="{{ image.image.url }}" class="card-img-top" alt="{{ property.title }}" style="height: 200px; object-fit: cover;">
-                            {% endif %}
-                        {% endfor %}
-                        {% if property.is_superhost %}
-                        <span class="position-absolute top-0 start-0 badge bg-primary m-2">
-                            Superhost
-                        </span>
-                        {% endif %}
+        <!-- Properties Content -->
+        <div class="col-lg-9 col-md-8">
+            <!-- Properties Header -->
+            <div class="properties-header fade-in">
+                <div class="results-info">
+                    {{ properties|length }} Properties Found
+                    {% if request.GET.location %}
+                    <span class="text-muted">in {{ request.GET.location }}</span>
+                    {% endif %}
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- View Toggle -->
+                    <div class="view-toggle">
+                        <button class="toggle-btn active" data-view="grid">
+                            <i class="fas fa-th-large"></i>Grid
+                        </button>
+                        <button class="toggle-btn" data-view="list">
+                            <i class="fas fa-list"></i>List
+                        </button>
                     </div>
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h5 class="card-title mb-0">{{ property.title }}</h5>
-                            <div class="rating">
-                                <i class="fas fa-star text-warning"></i>
-                                <span>{{ property.rating }}</span>
+                    
+                    <!-- Sort Dropdown -->
+                    <div class="sort-dropdown">
+                        <button class="sort-btn" type="button" onclick="toggleSortDropdown()">
+                            <i class="fas fa-sort me-2"></i>Sort by
+                            <i class="fas fa-chevron-down ms-2"></i>
+                        </button>
+                        <div class="sort-dropdown-menu" id="sortDropdown">
+                            <a class="sort-option" href="?{{ request.GET.urlencode }}&sort=price_asc">
+                                <i class="fas fa-arrow-up me-2"></i>Price: Low to High
+                            </a>
+                            <a class="sort-option" href="?{{ request.GET.urlencode }}&sort=price_desc">
+                                <i class="fas fa-arrow-down me-2"></i>Price: High to Low
+                            </a>
+                            <a class="sort-option" href="?{{ request.GET.urlencode }}&sort=rating">
+                                <i class="fas fa-star me-2"></i>Highest Rated
+                            </a>
+                            <a class="sort-option" href="?{{ request.GET.urlencode }}&sort=newest">
+                                <i class="fas fa-clock me-2"></i>Newest First
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Properties Grid -->
+            {% if properties %}
+            <div class="properties-grid fade-in" id="propertiesContainer">
+                {% for property in properties %}
+                <div class="property-card">
+                    <div class="property-image-container">
+                        {% if property.primary_image %}
+                            <img src="{{ property.primary_image }}" alt="{{ property.title }}" class="property-image">
+                        {% else %}
+                            <img src="{% static 'images/default-property.jpg' %}" alt="No image available" class="property-image">
+                        {% endif %}
+                        
+                        <!-- Property Badges -->
+                        <div class="property-badges">
+                            {% if property.is_superhost %}
+                            <span class="property-badge superhost">
+                                <i class="fas fa-medal me-1"></i>Superhost
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Wishlist Button -->
+                        <button class="wishlist-btn" onclick="toggleWishlist('{{ property.id }}')">
+                            <i class="far fa-heart"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="property-content">
+                        <div class="property-header">
+                            <h5 class="property-title">{{ property.title }}</h5>
+                            <div class="property-rating">
+                                <i class="fas fa-star"></i>
+                                <span>4.{{ property.id|add:5 }}</span>
                             </div>
                         </div>
-                        <p class="card-text text-muted">{{ property.location }}</p>
-                        <p class="card-text">
-                            <i class="fas fa-bed me-2"></i>{{ property.bedrooms }} Bedrooms
-                            <i class="fas fa-bath ms-3 me-2"></i>{{ property.bathrooms }} Bathrooms
+                        
+                        <p class="property-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            {{ property.location }}
                         </p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <p class="card-text mb-0">
-                                <strong>${{ property.price }}</strong> / night
-                            </p>
-                            <a href="{% url 'property_detail' property.id %}" class="btn btn-outline-primary">View Details</a>
+                        
+                        <div class="property-features">
+                            <div class="property-feature">
+                                <i class="fas fa-bed"></i>
+                                <span>{{ property.bedrooms }} bed{{ property.bedrooms|pluralize }}</span>
+                            </div>
+                            <div class="property-feature">
+                                <i class="fas fa-bath"></i>
+                                <span>{{ property.bathrooms }} bath{{ property.bathrooms|pluralize }}</span>
+                            </div>
+                            <div class="property-feature">
+                                <i class="fas fa-users"></i>
+                                <span>{{ property.max_guests }} guest{{ property.max_guests|pluralize }}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Amenities -->
+                        <div class="property-amenities">
+                            {% for amenity in property.amenities.all|slice:":4" %}
+                            <span class="amenity-tag">{{ amenity.name }}</span>
+                            {% endfor %}
+                            {% if property.amenities.count > 4 %}
+                            <span class="amenity-tag">+{{ property.amenities.count|add:"-4" }} more</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="property-footer">
+                            <div class="property-price">
+                                <span class="currency">$</span>{{ property.price_per_night }}
+                                <span class="per-night">/night</span>
+                            </div>
+                            <a href="{% url 'property_detail' property.id %}" class="view-details-btn">
+                                View Details
+                                <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
                         </div>
                     </div>
                 </div>
-            </div>
-            {% empty %}
-            <div class="col-12">
-                <div class="alert alert-info text-center">
-                    No properties found matching your criteria. Try adjusting your filters.
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-
-        <!-- Pagination -->
-        {% if properties.has_other_pages %}
-        <nav aria-label="Page navigation" class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if properties.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ properties.previous_page_number }}&{{ request.GET.urlencode }}">&laquo;</a>
-                </li>
-                {% endif %}
-
-                {% for i in properties.paginator.page_range %}
-                <li class="page-item {% if properties.number == i %}active{% endif %}">
-                    <a class="page-link" href="?page={{ i }}&{{ request.GET.urlencode }}">{{ i }}</a>
-                </li>
                 {% endfor %}
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="empty-state fade-in">
+                <div class="empty-state-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3>No properties found</h3>
+                <p>We couldn't find any properties matching your criteria. Try adjusting your filters or search terms.</p>
+                <button class="apply-filters-btn" onclick="clearAllFilters()" style="max-width: 200px; margin: 0 auto;">
+                    <i class="fas fa-refresh me-2"></i>Clear Filters
+                </button>
+            </div>
+            {% endif %}
 
-                {% if properties.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ properties.next_page_number }}&{{ request.GET.urlencode }}">&raquo;</a>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
+            <!-- Pagination -->
+            {% if properties.has_other_pages %}
+            <nav class="pagination-modern" aria-label="Properties pagination">
+                <ul class="pagination">
+                    {% if properties.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ properties.previous_page_number }}&{{ request.GET.urlencode }}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in properties.paginator.page_range %}
+                    {% if page_num == properties.number %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                    {% elif page_num == properties.paginator.num_pages and page_num > properties.number|add:3 %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_num }}&{{ request.GET.urlencode }}">{{ page_num }}</a>
+                    </li>
+                    {% elif page_num == 1 and page_num < properties.number|add:-3 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_num }}&{{ request.GET.urlencode }}">{{ page_num }}</a>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% elif page_num >= properties.number|add:-2 and page_num <= properties.number|add:2 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_num }}&{{ request.GET.urlencode }}">{{ page_num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if properties.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ properties.next_page_number }}&{{ request.GET.urlencode }}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit filters on change
+    const filterInputs = document.querySelectorAll('#filtersForm input, #filtersForm select');
+    filterInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.type === 'checkbox' || this.type === 'radio' || this.tagName === 'SELECT') {
+                setTimeout(() => {
+                    document.getElementById('filtersForm').submit();
+                }, 300);
+            }
+        });
+    });
+
+    // Price range auto-submit with debounce
+    const priceInputs = document.querySelectorAll('.price-input');
+    let priceTimeout;
+    priceInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            clearTimeout(priceTimeout);
+            priceTimeout = setTimeout(() => {
+                document.getElementById('filtersForm').submit();
+            }, 1000);
+        });
+    });
+
+    // View toggle functionality
+    const viewToggleBtns = document.querySelectorAll('.toggle-btn');
+    const propertiesContainer = document.getElementById('propertiesContainer');
+    
+    viewToggleBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            viewToggleBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const view = this.dataset.view;
+            if (view === 'list') {
+                propertiesContainer.style.display = 'block';
+                propertiesContainer.querySelectorAll('.property-card').forEach(card => {
+                    card.style.display = 'flex';
+                    card.style.marginBottom = '1.5rem';
+                    card.querySelector('.property-image-container').style.width = '300px';
+                    card.querySelector('.property-image-container').style.flexShrink = '0';
+                });
+            } else {
+                propertiesContainer.style.display = 'grid';
+                propertiesContainer.querySelectorAll('.property-card').forEach(card => {
+                    card.style.display = 'block';
+                    card.style.marginBottom = '0';
+                    card.querySelector('.property-image-container').style.width = 'auto';
+                });
+            }
+        });
+    });
+
+    // Wishlist functionality
+    window.toggleWishlist = function(propertyId) {
+        const btn = event.target.closest('.wishlist-btn');
+        const icon = btn.querySelector('i');
+        
+        if (icon.classList.contains('far')) {
+            icon.classList.remove('far');
+            icon.classList.add('fas');
+            btn.style.background = 'rgba(255, 107, 107, 0.1)';
+            
+            // Show notification
+            showNotification('Added to wishlist!', 'success');
+        } else {
+            icon.classList.remove('fas');
+            icon.classList.add('far');
+            btn.style.background = 'rgba(255, 255, 255, 0.9)';
+            
+            showNotification('Removed from wishlist!', 'info');
+        }
+    };
+
+    // Sort dropdown
+    window.toggleSortDropdown = function() {
+        const dropdown = document.getElementById('sortDropdown');
+        dropdown.classList.toggle('show');
+    };
+
+    // Close sort dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('sortDropdown');
+        const sortBtn = document.querySelector('.sort-btn');
+        
+        if (!dropdown.contains(e.target) && !sortBtn.contains(e.target)) {
+            dropdown.classList.remove('show');
+        }
+    });
+
+    // Clear all filters
+    window.clearAllFilters = function() {
+        const form = document.getElementById('filtersForm');
+        const inputs = form.querySelectorAll('input[type="checkbox"], input[type="number"], select');
+        
+        inputs.forEach(input => {
+            if (input.type === 'checkbox') {
+                input.checked = false;
+            } else {
+                input.value = '';
+            }
+        });
+        
+        // Keep search parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const newUrl = new URL(window.location);
+        newUrl.search = '';
+        
+        // Preserve search params
+        if (urlParams.get('location')) newUrl.searchParams.set('location', urlParams.get('location'));
+        if (urlParams.get('check_in')) newUrl.searchParams.set('check_in', urlParams.get('check_in'));
+        if (urlParams.get('check_out')) newUrl.searchParams.set('check_out', urlParams.get('check_out'));
+        if (urlParams.get('guests')) newUrl.searchParams.set('guests', urlParams.get('guests'));
+        
+        window.location = newUrl;
+    };
+
+    // Smooth scroll to top when changing pages
+    const pageLinks = document.querySelectorAll('.pagination .page-link');
+    pageLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+
+    // Show loading overlay during page transitions
+    const showLoading = () => {
+        const overlay = document.createElement('div');
+        overlay.className = 'loading-overlay';
+        overlay.innerHTML = '<div class="loading-spinner"></div>';
+        document.body.appendChild(overlay);
+        
+        setTimeout(() => {
+            if (document.body.contains(overlay)) {
+                document.body.removeChild(overlay);
+            }
+        }, 5000);
+    };
+
+    // Show loading on form submissions
+    document.getElementById('filtersForm').addEventListener('submit', showLoading);
+    document.getElementById('searchForm').addEventListener('submit', showLoading);
+
+    // Notification system
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} position-fixed`;
+        notification.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 300px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        `;
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+            ${message}
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.opacity = '1';
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
+
+    // Lazy loading for images
+    const images = document.querySelectorAll('.property-image');
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                img.style.opacity = '1';
+                observer.unobserve(img);
+            }
+        });
+    });
+
+    images.forEach(img => {
+        img.style.opacity = '0';
+        img.style.transition = 'opacity 0.3s ease';
+        imageObserver.observe(img);
+        
+        img.addEventListener('load', () => {
+            img.style.opacity = '1';
+        });
+    });
+
+    // Search suggestions (if you want to add this feature)
+    const locationInput = document.querySelector('input[name="location"]');
+    if (locationInput) {
+        locationInput.addEventListener('input', function() {
+            // Add search suggestions logic here
+            // You could call an API endpoint to get location suggestions
+        });
+    }
+
+    // URL state management
+    function updateURLWithFilters() {
+        const form = document.getElementById('filtersForm');
+        const formData = new FormData(form);
+        const params = new URLSearchParams();
+        
+        for (let [key, value] of formData.entries()) {
+            if (value.trim() !== '') {
+                params.append(key, value);
+            }
+        }
+        
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.replaceState({}, '', newUrl);
+    }
+
+    // Initialize tooltips for amenities
+    const amenityTags = document.querySelectorAll('.amenity-tag');
+    amenityTags.forEach(tag => {
+        tag.title = `Filter by ${tag.textContent}`;
+        tag.style.cursor = 'pointer';
+        tag.addEventListener('click', function() {
+            const amenityName = this.textContent.toLowerCase();
+            // Add logic to filter by this amenity
+        });
+    });
+});
+</script>
