@@ -71,8 +71,8 @@ def properties(request):
     elif sort == 'price_desc':
         properties = properties.order_by('-price_per_night')
     elif sort == 'rating':
-        # Assuming you have an average rating field or annotate
-        properties = properties.order_by('-average_rating')
+        # Property does not have average_rating, fallback to default ordering
+        pass
     elif sort == 'newest':
         properties = properties.order_by('-id')
 
