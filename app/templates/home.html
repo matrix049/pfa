@@ -3,102 +3,500 @@
 
 {% block title %}StayBooking - Find Your Perfect Stay{% endblock %}
 
-{% block content %}
-<!-- Hero Section -->
-<div class="hero-section position-relative mb-5">
-    <div class="bg-light p-5 rounded-3">
-        <div class="container">
-            <h1 class="display-4 fw-bold">Find your next perfect stay</h1>
-            <p class="lead">Book unique homes and experiences across the world.</p>
-            
-            <!-- Search Form -->
-            <form action="{% url 'properties' %}" method="get" class="mt-4">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <input type="text" name="location" class="form-control form-control-lg" placeholder="Where are you going?">
-                    </div>
-                    <div class="col-md-3">
-                        <input type="date" name="check_in" class="form-control form-control-lg" placeholder="Check-in">
-                    </div>
-                    <div class="col-md-3">
-                        <input type="date" name="check_out" class="form-control form-control-lg" placeholder="Check-out">
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary btn-lg w-100">Search</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+{% block extra_css %}
+<style>
+/* Modern Hero Section */
+.hero-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
 
-<!-- Featured Properties Section -->
-<section class="featured-properties mb-5">
-    <h2 class="mb-4">Featured Properties</h2>
-    <div class="row">
-        {% for property in featured_properties %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                {% if property.primary_image %}
-                    <img src="{{ property.primary_image }}" class="card-img-top" alt="{{ property.title }}" style="height: 200px; object-fit: cover;">
-                {% else %}
-                    <img src="{% static 'images/default-avatar.svg' %}" class="card-img-top" alt="No image available" style="height: 200px; object-fit: cover;">
-                {% endif %}
-                <div class="card-body">
-                    <h5 class="card-title">{{ property.title }}</h5>
-                    <p class="card-text text-muted">{{ property.location }}</p>
-                    <p class="card-text"><strong>${{ property.price }}</strong> / night</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="rating">
-                            <i class="fas fa-star text-warning"></i>
-                            <span>{{ property.rating }}</span>
-                        </div>
-                        <a href="{% url 'property_detail' property.id %}" class="btn btn-outline-primary">View Details</a>
+.hero-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    color: white;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    animation: fadeInUp 1s ease-out;
+}
+
+.hero-subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 3rem;
+    opacity: 0.95;
+    animation: fadeInUp 1s ease-out 0.2s both;
+}
+
+/* Glassmorphism Search */
+.search-glass {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    animation: fadeInUp 1s ease-out 0.4s both;
+}
+
+.search-input {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 15px;
+    padding: 1.2rem 1.5rem;
+    font-size: 1.1rem;
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.search-btn {
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+    border: none;
+    border-radius: 15px;
+    padding: 1.2rem 2rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.search-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+    background: linear-gradient(135deg, #FF8E53, #FF6B6B);
+}
+
+/* Modern Property Cards */
+.property-card-modern {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    background: white;
+    position: relative;
+}
+
+.property-card-modern:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.property-image {
+    height: 280px;
+    background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+    position: relative;
+    overflow: hidden;
+}
+
+.property-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.property-card-modern:hover .property-image img {
+    transform: scale(1.1);
+}
+
+.property-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    z-index: 3;
+}
+
+.property-content {
+    padding: 2rem;
+}
+
+.property-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+
+.property-location {
+    color: #718096;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.property-location i {
+    margin-right: 0.5rem;
+    color: #FF6B6B;
+}
+
+.property-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 1rem;
+}
+
+.property-price .per-night {
+    font-size: 1rem;
+    font-weight: 400;
+    color: #718096;
+}
+
+.property-rating {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.rating-stars {
+    color: #F6AD55;
+    margin-right: 0.5rem;
+}
+
+.view-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.view-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+/* Destination Cards */
+.destination-card {
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    height: 300px;
+    transition: all 0.4s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.destination-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.destination-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.destination-card:hover .destination-image {
+    transform: scale(1.1);
+}
+
+.destination-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    color: white;
+    padding: 2rem;
+}
+
+.destination-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.destination-desc {
+    opacity: 0.9;
+}
+
+/* Features Section */
+.features-section {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    padding: 5rem 0;
+    margin: 5rem 0;
+}
+
+.feature-card {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    color: white;
+    font-size: 2rem;
+}
+
+.feature-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 1rem;
+}
+
+.feature-desc {
+    color: #718096;
+    line-height: 1.6;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s ease;
+}
+
+.animate-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Section Spacing */
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.section-subtitle {
+    font-size: 1.2rem;
+    color: #718096;
+    text-align: center;
+    margin-bottom: 4rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .search-glass {
+        padding: 1.5rem;
+    }
+    
+    .property-image {
+        height: 220px;
+    }
+    
+    .destination-card {
+        height: 250px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Modern Hero Section -->
+<section class="hero-gradient">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="hero-content text-center">
+                    <h1 class="hero-title">Find Your Perfect Stay</h1>
+                    <p class="hero-subtitle">Discover unique homes and experiences around the world</p>
+                    
+                    <!-- Glassmorphism Search -->
+                    <div class="search-glass">
+                        <form action="{% url 'properties' %}" method="get">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-4">
+                                    <label class="form-label text-white-50 small">WHERE</label>
+                                    <input type="text" name="location" class="form-control search-input" placeholder="Search destinations">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-white-50 small">CHECK IN</label>
+                                    <input type="date" name="check_in" class="form-control search-input">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-white-50 small">CHECK OUT</label>
+                                    <input type="date" name="check_out" class="form-control search-input">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn search-btn w-100">
+                                        <i class="fas fa-search me-2"></i>Search
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
-        {% endfor %}
+    </div>
+</section>
+
+<!-- Featured Properties Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="animate-on-scroll">
+            <h2 class="section-title">Featured Properties</h2>
+            <p class="section-subtitle">Handpicked properties that offer the best experience</p>
+        </div>
+        
+        <div class="row">
+            {% for property in featured_properties %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="property-card-modern animate-on-scroll">
+                    <div class="property-image">
+                        {% if property.primary_image %}
+                            <img src="{{ property.primary_image }}" alt="{{ property.title }}">
+                        {% else %}
+                            <img src="{% static 'images/default-avatar.svg' %}" alt="No image available">
+                        {% endif %}
+                        <div class="property-badge">Featured</div>
+                    </div>
+                    
+                    <div class="property-content">
+                        <h5 class="property-title">{{ property.title }}</h5>
+                        <p class="property-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            {{ property.location }}
+                        </p>
+                        <div class="property-price">
+                            ${{ property.price_per_night }}
+                            <span class="per-night">/ night</span>
+                        </div>
+                        <div class="property-rating">
+                            <div>
+                                <span class="rating-stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </span>
+                                <span class="text-muted">4.9</span>
+                            </div>
+                            <a href="{% url 'property_detail' property.id %}" class="view-btn">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </section>
 
 <!-- Popular Destinations -->
-<section class="popular-destinations mb-5">
-    <h2 class="mb-4">Popular Destinations</h2>
-    <div class="row">
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <img src="{% static 'images/paris.jpg' %}" class="card-img-top" alt="Paris">
-                <div class="card-body">
-                    <h5 class="card-title">Paris</h5>
-                    <p class="card-text">Explore the city of lights</p>
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="animate-on-scroll">
+            <h2 class="section-title">Popular Destinations</h2>
+            <p class="section-subtitle">Explore the most loved destinations by travelers</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="destination-card animate-on-scroll">
+                    <img src="{% static 'images/paris.jpg' %}" alt="Paris" class="destination-image">
+                    <div class="destination-overlay">
+                        <h5 class="destination-title">Paris</h5>
+                        <p class="destination-desc">City of lights and romance</p>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <img src="{% static 'images/new-york.jpg' %}" class="card-img-top" alt="New York">
-                <div class="card-body">
-                    <h5 class="card-title">New York</h5>
-                    <p class="card-text">Experience the big apple</p>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="destination-card animate-on-scroll">
+                    <img src="{% static 'images/new-york.jpg' %}" alt="New York" class="destination-image">
+                    <div class="destination-overlay">
+                        <h5 class="destination-title">New York</h5>
+                        <p class="destination-desc">The city that never sleeps</p>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <img src="{% static 'images/tokyo.jpg' %}" class="card-img-top" alt="Tokyo">
-                <div class="card-body">
-                    <h5 class="card-title">Tokyo</h5>
-                    <p class="card-text">Discover Japanese culture</p>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="destination-card animate-on-scroll">
+                    <img src="{% static 'images/tokyo.jpg' %}" alt="Tokyo" class="destination-image">
+                    <div class="destination-overlay">
+                        <h5 class="destination-title">Tokyo</h5>
+                        <p class="destination-desc">Where tradition meets innovation</p>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <img src="{% static 'images/dubai.jpg' %}" class="card-img-top" alt="Dubai">
-                <div class="card-body">
-                    <h5 class="card-title">Dubai</h5>
-                    <p class="card-text">Luxury in the desert</p>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="destination-card animate-on-scroll">
+                    <img src="{% static 'images/dubai.jpg' %}" alt="Dubai" class="destination-image">
+                    <div class="destination-overlay">
+                        <h5 class="destination-title">Dubai</h5>
+                        <p class="destination-desc">Luxury in the desert</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -106,30 +504,72 @@
 </section>
 
 <!-- Why Choose Us -->
-<section class="why-choose-us mb-5">
-    <h2 class="mb-4">Why Choose StayBooking</h2>
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="text-center">
-                <i class="fas fa-shield-alt fa-3x mb-3 text-primary"></i>
-                <h4>Secure Booking</h4>
-                <p>Your safety and security is our top priority</p>
-            </div>
+<section class="features-section">
+    <div class="container">
+        <div class="animate-on-scroll">
+            <h2 class="section-title">Why Choose StayBooking</h2>
+            <p class="section-subtitle">We provide the best experience for both guests and hosts</p>
         </div>
-        <div class="col-md-4 mb-4">
-            <div class="text-center">
-                <i class="fas fa-hand-holding-usd fa-3x mb-3 text-primary"></i>
-                <h4>Best Price Guarantee</h4>
-                <p>Find the best deals for your stay</p>
+        
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4 class="feature-title">Secure Booking</h4>
+                    <p class="feature-desc">Your safety and security is our top priority. All payments are protected and secure.</p>
+                </div>
             </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="text-center">
-                <i class="fas fa-headset fa-3x mb-3 text-primary"></i>
-                <h4>24/7 Support</h4>
-                <p>We're here to help anytime you need us</p>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                    <h4 class="feature-title">Best Price Guarantee</h4>
+                    <p class="feature-desc">Find the best deals for your stay. We guarantee competitive prices on all properties.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h4 class="feature-title">24/7 Support</h4>
+                    <p class="feature-desc">We're here to help anytime you need us. Get support whenever, wherever.</p>
+                </div>
             </div>
         </div>
     </div>
 </section>
-{% endblock %} 
+
+<script>
+// Scroll animations
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, observerOptions);
+
+document.querySelectorAll('.animate-on-scroll').forEach(el => {
+    observer.observe(el);
+});
+
+// Smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+            behavior: 'smooth'
+        });
+    });
+});
+</script>
+{% endblock %}
