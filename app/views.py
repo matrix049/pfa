@@ -3,12 +3,13 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login
 from django.contrib import messages
 from django.utils import timezone
-from .models import Property, Booking, Review, UserProfile, HostApplication, Post
+from django.db import transaction
+from .models import Property, PropertyImage, Booking, Review, UserProfile, HostApplication, Post
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-from .forms import ProfileForm
+from .forms import ProfileForm, PropertyCreationForm
 from .forms import RegistrationForm
 from .forms import HostApplicationForm
 
@@ -95,8 +96,33 @@ def cancel_booking(request, pk):
 
 @login_required
 def create_listing(request):
-    # Add property creation logic here
-    return render(request, 'create_listing.html')
+    if request.method == 'POST':
+        form = PropertyCreationForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    # Create the property
+                    property = form.save(commit=False)
+                    property.host = request.user
+                    property.save()
+                    
+                    # Handle multiple image uploads
+                    files = request.FILES.getlist('photos')
+                    for index, file in enumerate(files):
+                        PropertyImage.objects.create(
+                            property=property,
+                            image=file,
+                            is_primary=(index == 0)  # First image is primary
+                        )
+                    
+                    messages.success(request, 'Property listed successfully!')
+                    return redirect('dashboard')
+            except Exception as e:
+                messages.error(request, f'Error creating property: {str(e)}')
+    else:
+        form = PropertyCreationForm()
+    
+    return render(request, 'create_listing.html', {'form': form})
 
 @login_required
 def edit_listing(request, pk):
@@ -172,23 +198,67 @@ def become_host(request):
         return redirect('dashboard')
 
     if request.method == 'POST':
-        form = HostApplicationForm(request.POST, request.FILES)
-        if form.is_valid():
-            application = form.save(commit=False)
-            application.user = request.user
-            application.save()
-            
-            # Update user profile to pending_host
-            profile = request.user.userprofile
-            profile.role = 'pending_host'
-            profile.save()
-            
-            messages.success(request, 'Your host application has been submitted and is pending approval.')
-            return redirect('dashboard')
-    else:
-        form = HostApplicationForm()
+        try:
+            with transaction.atomic():
+                # Extract form data
+                property_type = request.POST.get('property_type')
+                space_type = request.POST.get('space_type')
+                guests = int(request.POST.get('guests', 1))
+                bedrooms = int(request.POST.get('bedrooms', 1))
+                beds = int(request.POST.get('beds', 1))
+                bathrooms = int(request.POST.get('bathrooms', 1))
+                highlights = request.POST.get('highlights', '')
+                title = request.POST.get('title')
+                description = request.POST.get('description')
+                address = request.POST.get('address')
+                price = request.POST.get('price')
+                
+                # Validate required fields
+                if not all([property_type, space_type, title, description, address, price]):
+                    messages.error(request, 'Please fill in all required fields.')
+                    return render(request, 'become_host.html')
+                
+                # Create the property
+                property = Property.objects.create(
+                    host=request.user,
+                    title=title,
+                    description=description,
+                    property_type=property_type,
+                    space_type=space_type,
+                    location=address,
+                    price_per_night=float(price),
+                    bedrooms=bedrooms,
+                    bathrooms=bathrooms,
+                    beds=beds,
+                    max_guests=guests,
+                    cleaning_fee=50.00,  # Default values
+                    service_fee=30.00,   # Default values
+                    highlights=highlights
+                )
+                
+                # Handle multiple image uploads
+                files = request.FILES.getlist('photos')
+                if files:
+                    for index, file in enumerate(files):
+                        PropertyImage.objects.create(
+                            property=property,
+                            image=file,
+                            is_primary=(index == 0)  # First image is primary
+                        )
+                
+                # Update user profile to host
+                profile = request.user.userprofile
+                profile.role = 'host'
+                profile.save()
+                
+                messages.success(request, 'Congratulations! Your property has been listed and you are now a host.')
+                return redirect('dashboard')
+                
+        except Exception as e:
+            messages.error(request, f'Error creating listing: {str(e)}')
+            return render(request, 'become_host.html')
 
-    return render(request, 'become_host.html', {'form': form})
+    return render(request, 'become_host.html')
 
 def terms(request):
     return render(request, 'terms.html')

@@ -9,23 +9,42 @@ class Property(models.Model):
         ('apartment', 'Apartment'),
         ('villa', 'Villa'),
         ('cottage', 'Cottage'),
+        ('boat', 'Boat'),
+        ('cabin', 'Cabin'),
+        ('caravan', 'Caravan'),
+        ('castle', 'Castle'),
+        ('farm', 'Farm'),
+        ('hotel', 'Hotel'),
+        ('riad', 'Riad'),
+        ('tent', 'Tent'),
+        ('tiny', 'Tiny House'),
+        ('tower', 'Tower'),
+        ('treehouse', 'Treehouse'),
         ('other', 'Other'),
+    )
+
+    SPACE_TYPES = (
+        ('entire', 'Entire Place'),
+        ('room', 'Private Room'),
     )
 
     host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='properties')
     title = models.CharField(max_length=200)
     description = models.TextField()
     property_type = models.CharField(max_length=20, choices=PROPERTY_TYPES)
+    space_type = models.CharField(max_length=20, choices=SPACE_TYPES, default='entire')
     location = models.CharField(max_length=200)
     price_per_night = models.DecimalField(max_digits=10, decimal_places=2)
     bedrooms = models.PositiveIntegerField()
     bathrooms = models.PositiveIntegerField()
+    beds = models.PositiveIntegerField(default=1)
     max_guests = models.PositiveIntegerField()
     cleaning_fee = models.DecimalField(max_digits=6, decimal_places=2)
     service_fee = models.DecimalField(max_digits=6, decimal_places=2)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     is_superhost = models.BooleanField(default=False)
+    highlights = models.CharField(max_length=200, blank=True)  # Store comma-separated highlights
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -42,6 +61,11 @@ class Property(models.Model):
         if any_image:
             return any_image.image.url
         return None
+
+    def get_highlights_list(self):
+        if self.highlights:
+            return self.highlights.split(',')
+        return []
 
     class Meta:
         verbose_name_plural = 'Properties'
@@ -109,6 +133,19 @@ class UserProfile(models.Model):
     bio = models.TextField(max_length=500, blank=True)
     date_joined = models.DateTimeField(default=timezone.now)
     avatar = models.ImageField(upload_to='avatars/', default='avatars/default.png', blank=True)
+    
+    # Additional profile fields
+    date_of_birth = models.DateField(null=True, blank=True)
+    address = models.TextField(blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+    language = models.CharField(max_length=50, blank=True, default='English')
+    currency = models.CharField(max_length=10, blank=True, default='USD')
+    
+    # Preferences
+    email_notifications = models.BooleanField(default=True)
+    sms_notifications = models.BooleanField(default=False)
+    marketing_emails = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
@@ -125,6 +162,10 @@ class UserProfile(models.Model):
         if self.avatar and hasattr(self.avatar, 'url'):
             return self.avatar.url
         return '/static/images/default-avatar.png'
+
+    @property
+    def full_name(self):
+        return f"{self.user.first_name} {self.user.last_name}".strip() or self.user.username
 
 class HostApplication(models.Model):
     STATUS_CHOICES = (
