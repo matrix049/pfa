@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">User Management</h2>
+    
+    <!-- Search and Bulk Actions -->
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <form method="get" class="d-flex">
+                <input type="text" name="q" class="form-control me-2" placeholder="Search by username, email, or phone" value="{{ request.GET.q }}">
+                <button class="btn btn-primary" type="submit">Search</button>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    Bulk Actions
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" onclick="bulkAction('activate')">Activate Selected</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="bulkAction('deactivate')">Deactivate Selected</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="bulkAction('delete')">Delete Selected</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="selectAll"></th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Phone</th>
+                    <th>Full Name</th>
+                    <th>Active</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td><input type="checkbox" name="selected_users" value="{{ user.id }}" class="user-checkbox"></td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        <span class="badge {% if user.userprofile.role == 'admin' %}bg-danger{% elif user.userprofile.role == 'host' %}bg-warning{% else %}bg-info{% endif %}">
+                            {{ user.userprofile.role|title }}
+                        </span>
+                    </td>
+                    <td>{{ user.userprofile.phone_number|default:"-" }}</td>
+                    <td>{{ user.userprofile.full_name|default:"-" }}</td>
+                    <td>
+                        <span class="badge {% if user.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                            {{ user.is_active|yesno:"Active,Inactive" }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a href="{% url 'edit_user' user.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-warning" onclick="toggleUserStatus({{ user.id }})">
+                                <i class="fas fa-toggle-on"></i> Toggle
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteUser({{ user.id }}, '{{ user.username }}')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center">No users found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete user: <strong id="deleteUserName"></strong>?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Select all functionality
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.user-checkbox');
+    checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+});
+
+// Delete user function
+function deleteUser(userId, username) {
+    document.getElementById('deleteUserName').textContent = username;
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+    
+    document.getElementById('confirmDelete').onclick = function() {
+        fetch(`/user-admin/delete-user/${userId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+    };
+}
+
+// Toggle user status
+function toggleUserStatus(userId) {
+    fetch(`/user-admin/toggle-user-status/${userId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+// Bulk actions
+function bulkAction(action) {
+    const selectedUsers = Array.from(document.querySelectorAll('.user-checkbox:checked')).map(cb => cb.value);
+    
+    if (selectedUsers.length === 0) {
+        alert('Please select at least one user.');
+        return;
+    }
+    
+    if (action === 'delete' && !confirm('Are you sure you want to delete the selected users?')) {
+        return;
+    }
+    
+    fetch(`/user-admin/bulk-action/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        body: JSON.stringify({
+            action: action,
+            user_ids: selectedUsers
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+</script>
+
+{% csrf_token %}
+{% endblock %} 

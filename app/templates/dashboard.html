@@ -444,6 +444,11 @@
                     {% endif %}
                     {% if user_role == 'admin' %}
                     <li>
+                        <a href="{% url 'manage_users' %}" class="nav-link-modern">
+                            <i class="fas fa-users"></i>Manage Users
+                        </a>
+                    </li>
+                    <li>
                         <a href="#applications" class="nav-link-modern" data-bs-toggle="list">
                             <i class="fas fa-user-check"></i>Host Applications
                         </a>

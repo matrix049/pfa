@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.utils import timezone
 from django.db import transaction
@@ -14,6 +14,24 @@ from .forms import RegistrationForm
 from .forms import HostApplicationForm
 from django.core.paginator import Paginator
 from django.db.models import Q
+import stripe
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+import json
+from django.contrib.auth.backends import ModelBackend
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+def check_user_active(view_func):
+    """Decorator to check if user is still active"""
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated and not request.user.is_active:
+            messages.error(request, 'Your account has been deactivated. Please contact an administrator.')
+            return redirect('login')
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 def home(request):
     featured_properties = Property.objects.all()[:6]
@@ -96,6 +114,7 @@ def property_detail(request, pk):
     })
 
 @login_required
+@check_user_active
 def dashboard(request):
     user_bookings = request.user.bookings.all()
     user_properties = request.user.properties.all()
@@ -142,12 +161,58 @@ def register(request):
 
 @login_required
 def create_booking(request, pk):
+    property = get_object_or_404(Property, pk=pk)
     if request.method == 'POST':
-        property = get_object_or_404(Property, pk=pk)
-        # Add booking creation logic here
-        messages.success(request, 'Booking created successfully!')
-        return redirect('dashboard')
+        check_in = request.POST.get('check_in')
+        check_out = request.POST.get('check_out')
+        guests = int(request.POST.get('guests', 1))
+        # Calculate total price (simple version)
+        nights = (timezone.datetime.strptime(check_out, '%Y-%m-%d').date() - timezone.datetime.strptime(check_in, '%Y-%m-%d').date()).days
+        if nights < 1:
+            messages.error(request, 'Check-out must be after check-in.')
+            return redirect('property_detail', pk=pk)
+        total_price = (property.price_per_night * nights) + property.cleaning_fee + property.service_fee
+        # Create Stripe Checkout session
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                        'name': f'Booking for {property.title}',
+                    },
+                    'unit_amount': int(total_price * 100),
+                },
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url=request.build_absolute_uri(f'/booking/success/?property={property.id}&check_in={check_in}&check_out={check_out}&guests={guests}&total={total_price}'),
+            cancel_url=request.build_absolute_uri(request.path),
+            customer_email=request.user.email,
+        )
+        return redirect(session.url)
     return redirect('property_detail', pk=pk)
+
+@csrf_exempt
+def booking_success(request):
+    # Create the booking after successful payment
+    property_id = request.GET.get('property')
+    check_in = request.GET.get('check_in')
+    check_out = request.GET.get('check_out')
+    guests = int(request.GET.get('guests', 1))
+    total_price = request.GET.get('total')
+    property = get_object_or_404(Property, pk=property_id)
+    Booking.objects.create(
+        property=property,
+        guest=request.user,
+        check_in=check_in,
+        check_out=check_out,
+        guests=guests,
+        total_price=total_price,
+        status='confirmed',
+    )
+    messages.success(request, 'Booking created and payment successful!')
+    return redirect('dashboard')
 
 @login_required
 def cancel_booking(request, pk):
@@ -392,3 +457,137 @@ def decline_post(request, post_id):
         post.save()
         messages.success(request, 'Post has been declined.')
     return redirect('manage_posts')
+
+@login_required
+@user_passes_test(is_admin)
+def manage_users(request):
+    users = User.objects.select_related('userprofile').all().order_by('username')
+    query = request.GET.get('q')
+    if query:
+        users = users.filter(
+            Q(username__icontains=query) |
+            Q(email__icontains=query) |
+            Q(userprofile__phone_number__icontains=query)
+        )
+    return render(request, 'users/manage_users.html', {'users': users})
+
+@login_required
+@user_passes_test(is_admin)
+def edit_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    if request.method == 'POST':
+        user.username = request.POST.get('username')
+        user.email = request.POST.get('email')
+        user.is_active = request.POST.get('is_active') == 'on'
+        user.first_name = request.POST.get('first_name', '')
+        user.last_name = request.POST.get('last_name', '')
+        user.save()
+        
+        profile = user.userprofile
+        profile.phone_number = request.POST.get('phone_number')
+        profile.role = request.POST.get('role')
+        profile.save()
+        
+        messages.success(request, f'User {user.username} updated successfully.')
+        return redirect('manage_users')
+    
+    return render(request, 'users/edit_user.html', {'user_to_edit': user})
+
+@login_required
+@user_passes_test(is_admin)
+@require_POST
+def delete_user(request, user_id):
+    try:
+        user = get_object_or_404(User, id=user_id)
+        if user == request.user:
+            return JsonResponse({'success': False, 'error': 'Cannot delete yourself'})
+        
+        username = user.username
+        user.delete()
+        return JsonResponse({'success': True, 'message': f'User {username} deleted successfully'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@user_passes_test(is_admin)
+@require_POST
+def toggle_user_status(request, user_id):
+    try:
+        user = get_object_or_404(User, id=user_id)
+        if user == request.user:
+            return JsonResponse({'success': False, 'error': 'Cannot deactivate yourself'})
+        
+        user.is_active = not user.is_active
+        user.save()
+        status = 'activated' if user.is_active else 'deactivated'
+        message = f'User {user.username} has been {status}. '
+        if not user.is_active:
+            message += 'They will be logged out immediately if currently logged in.'
+        return JsonResponse({'success': True, 'message': message})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@user_passes_test(is_admin)
+@require_POST
+def bulk_action(request):
+    try:
+        data = json.loads(request.body)
+        action = data.get('action')
+        user_ids = data.get('user_ids', [])
+        
+        if not user_ids:
+            return JsonResponse({'success': False, 'error': 'No users selected'})
+        
+        users = User.objects.filter(id__in=user_ids)
+        
+        if action == 'activate':
+            users.update(is_active=True)
+            message = f'{users.count()} users activated'
+        elif action == 'deactivate':
+            # Don't allow deactivating yourself
+            users = users.exclude(id=request.user.id)
+            users.update(is_active=False)
+            message = f'{users.count()} users deactivated'
+        elif action == 'delete':
+            # Don't allow deleting yourself
+            users = users.exclude(id=request.user.id)
+            count = users.count()
+            users.delete()
+            message = f'{count} users deleted'
+        else:
+            return JsonResponse({'success': False, 'error': 'Invalid action'})
+        
+        return JsonResponse({'success': True, 'message': message})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+def custom_authenticate(username, password):
+    """Custom authentication that checks if user is active"""
+    user = authenticate(username=username, password=password)
+    if user and not user.is_active:
+        return None
+    return user
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = custom_authenticate(username, password)
+        
+        if user is not None:
+            login(request, user)
+            messages.success(request, f'Welcome back, {user.username}!')
+            return redirect('dashboard')
+        else:
+            # Check if user exists but is inactive
+            try:
+                user = User.objects.get(username=username)
+                if not user.is_active:
+                    messages.error(request, 'Your account has been deactivated. Please contact an administrator.')
+                else:
+                    messages.error(request, 'Invalid username or password.')
+            except User.DoesNotExist:
+                messages.error(request, 'Invalid username or password.')
+    
+    return render(request, 'registration/login.html')
