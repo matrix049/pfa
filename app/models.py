@@ -119,6 +119,18 @@ class Review(models.Model):
     def __str__(self):
         return f"Review for {self.property.title} by {self.user.username}"
 
+class Wishlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='wishlist_items')
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='wishlisted_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.property.title}"
+
+    class Meta:
+        unique_together = ['user', 'property']
+        ordering = ['-created_at']
+
 class UserProfile(models.Model):
     ROLE_CHOICES = (
         ('user', 'Regular User'),

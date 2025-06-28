@@ -768,6 +768,9 @@
     </div>
 </section>
 
+<!-- CSRF Token for AJAX requests -->
+{% csrf_token %}
+
 <div class="container">
     <div class="row">
         <!-- Enhanced Filters Sidebar -->
@@ -981,8 +984,12 @@
                         </div>
                         
                         <!-- Wishlist Button -->
-                        <button class="wishlist-btn" onclick="toggleWishlist('{{ property.id }}')">
+                        <button class="wishlist-btn" onclick="toggleWishlist('{{ property.id }}')" data-property-id="{{ property.id }}">
+                            {% if property.id in user_wishlist %}
+                            <i class="fas fa-heart"></i>
+                            {% else %}
                             <i class="far fa-heart"></i>
+                            {% endif %}
                         </button>
                     </div>
                     
@@ -1166,21 +1173,47 @@ document.addEventListener('DOMContentLoaded', function() {
     window.toggleWishlist = function(propertyId) {
         const btn = event.target.closest('.wishlist-btn');
         const icon = btn.querySelector('i');
+        const isInWishlist = icon.classList.contains('fas');
         
-        if (icon.classList.contains('far')) {
-            icon.classList.remove('far');
-            icon.classList.add('fas');
-            btn.style.background = 'rgba(255, 107, 107, 0.1)';
-            
-            // Show notification
-            showNotification('Added to wishlist!', 'success');
-        } else {
-            icon.classList.remove('fas');
-            icon.classList.add('far');
-            btn.style.background = 'rgba(255, 255, 255, 0.9)';
-            
-            showNotification('Removed from wishlist!', 'info');
-        }
+        // Create form data
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        // Determine the URL based on current state
+        const url = isInWishlist 
+            ? `/wishlist/remove/${propertyId}/`
+            : `/wishlist/add/${propertyId}/`;
+        
+        // Make AJAX request
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (isInWishlist) {
+                    icon.classList.remove('fas');
+                    icon.classList.add('far');
+                    btn.style.background = 'rgba(255, 255, 255, 0.9)';
+                    showNotification('Removed from wishlist!', 'info');
+                } else {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                    btn.style.background = 'rgba(255, 107, 107, 0.1)';
+                    showNotification('Added to wishlist!', 'success');
+                }
+            } else {
+                showNotification(data.message || 'Error updating wishlist!', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error updating wishlist!', 'error');
+        });
     };
 
     // Sort dropdown

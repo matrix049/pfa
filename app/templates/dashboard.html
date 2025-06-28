@@ -431,6 +431,11 @@
                         </a>
                     </li>
                     <li>
+                        <a href="#wishlist" class="nav-link-modern" data-bs-toggle="list">
+                            <i class="fas fa-heart"></i>My Wishlist
+                        </a>
+                    </li>
+                    <li>
                         <a href="#reviews" class="nav-link-modern" data-bs-toggle="list">
                             <i class="fas fa-star"></i>My Reviews
                         </a>
@@ -562,6 +567,59 @@
                                     <i class="fas fa-search me-2"></i>Browse Properties
                                 </a>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wishlist Tab -->
+                <div class="tab-pane fade" id="wishlist">
+                    <div class="content-card">
+                        <div class="content-header">
+                            <h3><i class="fas fa-heart me-2"></i>My Wishlist</h3>
+                        </div>
+                        <div class="content-body">
+                            {% if wishlist_properties %}
+                            <div class="row">
+                                {% for property in wishlist_properties %}
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        {% if property.primary_image %}
+                                        <img src="{{ property.primary_image }}" class="card-img-top" alt="{{ property.title }}" style="height: 200px; object-fit: cover;">
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ property.title }}</h5>
+                                            <p class="text-muted mb-2">
+                                                <i class="fas fa-map-marker-alt me-2"></i>{{ property.location }}
+                                            </p>
+                                            <p class="mb-1"><strong>Type:</strong> {{ property.get_property_type_display }}</p>
+                                            <p class="mb-1"><strong>Price:</strong> ${{ property.price_per_night }}/night</p>
+                                            <p class="mb-0"><strong>Max Guests:</strong> {{ property.max_guests }}</p>
+                                        </div>
+                                        <div class="card-footer bg-transparent">
+                                            <a href="{% url 'property_detail' property.pk %}" class="btn btn-outline-primary btn-sm me-2">
+                                                <i class="fas fa-eye me-2"></i>View Details
+                                            </a>
+                                            <form method="post" action="{% url 'remove_from_wishlist' property.pk %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                    <i class="fas fa-heart-broken me-2"></i>Remove
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="alert-modern alert-info-modern text-center">
+                                <i class="fas fa-heart me-2"></i>Your wishlist is empty.
+                                <div class="mt-3">
+                                    <a href="{% url 'properties' %}" class="btn-modern">
+                                        <i class="fas fa-search me-2"></i>Browse Properties
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

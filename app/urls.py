@@ -37,4 +37,6 @@ urlpatterns = [
     path('user-admin/toggle-user-status/<int:user_id>/', views.toggle_user_status, name='toggle_user_status'),
     path('user-admin/bulk-action/', views.bulk_action, name='bulk_action'),
     path('booking/success/', views.booking_success, name='booking_success'),
+    path('wishlist/add/<int:property_id>/', views.add_to_wishlist, name='add_to_wishlist'),
+    path('wishlist/remove/<int:property_id>/', views.remove_from_wishlist, name='remove_from_wishlist'),
 ]

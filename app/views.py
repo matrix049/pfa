@@ -4,7 +4,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.utils import timezone
 from django.db import transaction
-from .models import Property, PropertyImage, Booking, Review, UserProfile, HostApplication, Post
+from .models import Property, PropertyImage, Booking, Review, UserProfile, HostApplication, Post, Wishlist
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.validators import validate_email
@@ -40,6 +40,11 @@ def home(request):
 def properties(request):
     properties = Property.objects.prefetch_related('images', 'amenities').all()
     property_types = Property._meta.get_field('property_type').choices
+
+    # Get user's wishlist if authenticated
+    user_wishlist = []
+    if request.user.is_authenticated:
+        user_wishlist = list(request.user.wishlist_items.values_list('property_id', flat=True))
 
     # Filtering
     location = request.GET.get('location')
@@ -100,6 +105,7 @@ def properties(request):
     return render(request, 'properties.html', {
         'properties': page_obj,
         'property_types': property_types,
+        'user_wishlist': user_wishlist,
         'request': request,
     })
 
@@ -119,6 +125,7 @@ def dashboard(request):
     user_bookings = request.user.bookings.all()
     user_properties = request.user.properties.all()
     user_reviews = request.user.reviews.all()
+    wishlist_properties = Property.objects.filter(wishlisted_by__user=request.user)
     
     # Get host application if exists
     host_application = None
@@ -139,6 +146,7 @@ def dashboard(request):
         'bookings': user_bookings,
         'properties': user_properties,
         'reviews': user_reviews,
+        'wishlist_properties': wishlist_properties,
         'host_application': host_application,
         'managed_properties': managed_properties,
         'pending_applications': pending_applications,
@@ -563,31 +571,79 @@ def bulk_action(request):
         return JsonResponse({'success': False, 'error': str(e)})
 
 def custom_authenticate(username, password):
-    """Custom authentication that checks if user is active"""
-    user = authenticate(username=username, password=password)
-    if user and not user.is_active:
-        return None
-    return user
+    try:
+        user = User.objects.get(username=username)
+        if user.check_password(password):
+            return user
+    except User.DoesNotExist:
+        pass
+    return None
 
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = custom_authenticate(username, password)
-        
         if user is not None:
             login(request, user)
             messages.success(request, f'Welcome back, {user.username}!')
             return redirect('dashboard')
         else:
-            # Check if user exists but is inactive
-            try:
-                user = User.objects.get(username=username)
-                if not user.is_active:
-                    messages.error(request, 'Your account has been deactivated. Please contact an administrator.')
-                else:
-                    messages.error(request, 'Invalid username or password.')
-            except User.DoesNotExist:
-                messages.error(request, 'Invalid username or password.')
-    
+            messages.error(request, 'Invalid username or password.')
     return render(request, 'registration/login.html')
+
+@login_required
+@require_POST
+def add_to_wishlist(request, property_id):
+    property = get_object_or_404(Property, pk=property_id)
+    wishlist_item, created = Wishlist.objects.get_or_create(
+        user=request.user,
+        property=property
+    )
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        if created:
+            return JsonResponse({
+                'success': True,
+                'message': f'{property.title} added to your wishlist!'
+            })
+        else:
+            return JsonResponse({
+                'success': True,
+                'message': f'{property.title} is already in your wishlist!'
+            })
+    
+    # Non-AJAX request handling
+    if created:
+        messages.success(request, f'{property.title} added to your wishlist!')
+    else:
+        messages.info(request, f'{property.title} is already in your wishlist!')
+    
+    # Redirect back to the previous page or property detail
+    return redirect(request.META.get('HTTP_REFERER', 'properties'))
+
+@login_required
+@require_POST
+def remove_from_wishlist(request, property_id):
+    property = get_object_or_404(Property, pk=property_id)
+    try:
+        wishlist_item = Wishlist.objects.get(user=request.user, property=property)
+        wishlist_item.delete()
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': f'{property.title} removed from your wishlist!'
+            })
+        
+        messages.success(request, f'{property.title} removed from your wishlist!')
+    except Wishlist.DoesNotExist:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'Property not found in your wishlist!'
+            })
+        messages.error(request, 'Property not found in your wishlist!')
+    
+    # Redirect back to the previous page or dashboard
+    return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
