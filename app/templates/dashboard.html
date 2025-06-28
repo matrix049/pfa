@@ -367,6 +367,9 @@
 {% endblock %}
 
 {% block content %}
+<!-- CSRF Token for AJAX requests -->
+{% csrf_token %}
+
 <!-- Dashboard Header -->
 <div class="dashboard-header">
     <div class="container">
@@ -599,12 +602,9 @@
                                             <a href="{% url 'property_detail' property.pk %}" class="btn btn-outline-primary btn-sm me-2">
                                                 <i class="fas fa-eye me-2"></i>View Details
                                             </a>
-                                            <form method="post" action="{% url 'remove_from_wishlist' property.pk %}" class="d-inline">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-outline-danger btn-sm">
-                                                    <i class="fas fa-heart-broken me-2"></i>Remove
-                                                </button>
-                                            </form>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeFromWishlist('{{ property.pk }}', this)">
+                                                <i class="fas fa-heart-broken me-2"></i>Remove
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -949,6 +949,216 @@ document.addEventListener('DOMContentLoaded', function() {
     
     checkForUpdates();
     setInterval(checkForUpdates, 300000); // Check every 5 minutes
+    
+    // Wishlist removal functionality
+    window.removeFromWishlist = function(propertyId, button) {
+        const card = button.closest('.col-md-6');
+        const propertyTitle = card.querySelector('.card-title').textContent;
+        
+        // Create custom confirmation modal
+        const modal = document.createElement('div');
+        modal.className = 'custom-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        `;
+        
+        modal.innerHTML = `
+            <div class="modal-content" style="
+                background: white;
+                padding: 2rem;
+                border-radius: 15px;
+                max-width: 400px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                transform: scale(0.8);
+                transition: transform 0.3s ease;
+            ">
+                <div style="margin-bottom: 1.5rem;">
+                    <i class="fas fa-heart-broken" style="font-size: 3rem; color: #ff6b6b; margin-bottom: 1rem;"></i>
+                    <h4 style="color: #2d3748; margin-bottom: 0.5rem;">Remove from Wishlist</h4>
+                    <p style="color: #718096; margin: 0;">Are you sure you want to remove <strong>"${propertyTitle}"</strong> from your wishlist?</p>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <button class="btn-cancel" style="
+                        background: #e2e8f0;
+                        color: #4a5568;
+                        border: none;
+                        padding: 0.75rem 1.5rem;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                    ">Cancel</button>
+                    <button class="btn-confirm" style="
+                        background: #ff6b6b;
+                        color: white;
+                        border: none;
+                        padding: 0.75rem 1.5rem;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                    ">Remove</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Animate modal in
+        setTimeout(() => {
+            modal.style.opacity = '1';
+            modal.querySelector('.modal-content').style.transform = 'scale(1)';
+        }, 10);
+        
+        // Handle button clicks
+        const cancelBtn = modal.querySelector('.btn-cancel');
+        const confirmBtn = modal.querySelector('.btn-confirm');
+        
+        const closeModal = () => {
+            modal.style.opacity = '0';
+            modal.querySelector('.modal-content').style.transform = 'scale(0.8)';
+            setTimeout(() => {
+                if (document.body.contains(modal)) {
+                    document.body.removeChild(modal);
+                }
+            }, 300);
+        };
+        
+        cancelBtn.addEventListener('click', closeModal);
+        confirmBtn.addEventListener('click', () => {
+            closeModal();
+            
+            // Proceed with removal
+            const originalText = button.innerHTML;
+            
+            // Show loading state
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Removing...';
+            button.disabled = true;
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            
+            // Make AJAX request
+            fetch(`/wishlist/remove/${propertyId}/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the card with animation
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateX(-100%)';
+                    card.style.transition = 'all 0.3s ease';
+                    
+                    setTimeout(() => {
+                        card.remove();
+                        
+                        // Check if wishlist is now empty
+                        const wishlistContainer = document.querySelector('#wishlist .content-body .row');
+                        if (wishlistContainer && wishlistContainer.children.length === 0) {
+                            // Show empty state
+                            wishlistContainer.innerHTML = `
+                                <div class="col-12">
+                                    <div class="alert-modern alert-info-modern text-center">
+                                        <i class="fas fa-heart me-2"></i>Your wishlist is empty.
+                                        <div class="mt-3">
+                                            <a href="{% url 'properties' %}" class="btn-modern">
+                                                <i class="fas fa-search me-2"></i>Browse Properties
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }, 300);
+                    
+                    // Show success notification
+                    showNotification(data.message || 'Property removed from wishlist!', 'success');
+                } else {
+                    // Restore button state
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                    showNotification(data.message || 'Error removing from wishlist!', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Restore button state
+                button.innerHTML = originalText;
+                button.disabled = false;
+                showNotification('Error removing from wishlist!', 'error');
+            });
+        });
+        
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function escapeHandler(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+                document.removeEventListener('keydown', escapeHandler);
+            }
+        });
+    };
+    
+    // Notification function for wishlist
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} position-fixed`;
+        notification.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 300px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        `;
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+            ${message}
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.opacity = '1';
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
 });
 </script>
 {% endblock %}
