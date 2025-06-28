@@ -769,19 +769,15 @@
                                             <td>{{ application.business_name }}</td>
                                             <td>{{ application.created_at|date:"M d, Y" }}</td>
                                             <td>
-                                                <form method="post" action="{% url 'admin:app_hostapplication_changelist' %}" class="d-inline">
+                                                <form method="post" action="{% url 'approve_host_application' application.pk %}" class="d-inline approve-form" data-application-id="{{ application.pk }}">
                                                     {% csrf_token %}
-                                                    <input type="hidden" name="action" value="approve_applications">
-                                                    <input type="hidden" name="_selected_action" value="{{ application.pk }}">
-                                                    <button type="submit" class="btn btn-success btn-sm me-2">
+                                                    <button type="submit" class="btn btn-success btn-sm me-2 approve-btn">
                                                         <i class="fas fa-check me-2"></i>{% if is_french %}Approuver{% else %}Approve{% endif %}
                                                     </button>
                                                 </form>
-                                                <form method="post" action="{% url 'admin:app_hostapplication_changelist' %}" class="d-inline">
+                                                <form method="post" action="{% url 'reject_host_application' application.pk %}" class="d-inline reject-form" data-application-id="{{ application.pk }}">
                                                     {% csrf_token %}
-                                                    <input type="hidden" name="action" value="reject_applications">
-                                                    <input type="hidden" name="_selected_action" value="{{ application.pk }}">
-                                                    <button type="submit" class="btn btn-danger btn-sm">
+                                                    <button type="submit" class="btn btn-danger btn-sm reject-btn">
                                                         <i class="fas fa-times me-2"></i>{% if is_french %}Rejeter{% else %}Reject{% endif %}
                                                     </button>
                                                 </form>
@@ -806,6 +802,22 @@
 </div>
 
 <script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
 document.addEventListener('DOMContentLoaded', function() {
     // Active tab management
     const navLinks = document.querySelectorAll('.nav-link-modern[data-bs-toggle="list"]');
@@ -904,8 +916,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Loading state for buttons
+    // Loading state for buttons (exclude approve/reject buttons)
     document.querySelectorAll('button[type="submit"]').forEach(button => {
+        // Skip approve/reject buttons to avoid interference
+        const form = button.closest('form');
+        if (form && (form.action.includes('approve_host_application') || form.action.includes('reject_host_application'))) {
+            return; // Skip these buttons
+        }
+        
         button.addEventListener('click', function() {
             const originalText = this.innerHTML;
             this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>{% if is_french %}Traitement...{% else %}Processing...{% endif %}';
@@ -916,6 +934,75 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.innerHTML = originalText;
                 this.disabled = false;
             }, 5000);
+        });
+    });
+    
+    // Special loading state for approve/reject buttons
+    document.querySelectorAll('form[action*="approve_host_application"], form[action*="reject_host_application"]').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const applicationId = form.dataset.applicationId;
+            const isApprove = form.action.includes('approve');
+            if (submitBtn) {
+                const originalText = submitBtn.innerHTML;
+                const action = isApprove ? '{% if is_french %}Approbation...{% else %}Approving...{% endif %}' : '{% if is_french %}Rejet...{% else %}Rejecting...{% endif %}';
+                submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i>${action}`;
+                submitBtn.disabled = true;
+                const row = form.closest('tr');
+                const otherBtn = row.querySelector(isApprove ? '.reject-btn' : '.approve-btn');
+                if (otherBtn) otherBtn.disabled = true;
+                const formData = new FormData(form);
+                // Fallback: get CSRF token from form if cookie is missing
+                let csrftoken = getCookie('csrftoken');
+                if (!csrftoken) {
+                    const csrfInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
+                    if (csrfInput) csrftoken = csrfInput.value;
+                }
+                console.log('Submitting:', form.action, [...formData], 'CSRF:', csrftoken);
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrftoken,
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        showNotification(data.message, 'success');
+                        row.style.opacity = '0';
+                        row.style.transform = 'translateX(-100%)';
+                        row.style.transition = 'all 0.3s ease';
+                        setTimeout(() => {
+                            row.remove();
+                            const tbody = row.closest('tbody');
+                            if (tbody && tbody.children.length === 0) {
+                                const tableContainer = tbody.closest('.table-responsive');
+                                tableContainer.innerHTML = `<div class="alert-modern alert-info-modern text-center"><i class="fas fa-info-circle me-2"></i>{% if is_french %}Pas de demandes d'hôte en attente.{% else %}No pending host applications.{% endif %}</div>`;
+                            }
+                        }, 300);
+                    } else {
+                        showNotification(data.message || '{% if is_french %}Erreur lors du traitement de la demande.{% else %}Error processing application.{% endif %}', 'error');
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                        if (otherBtn) otherBtn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('{% if is_french %}Erreur lors du traitement de la demande.{% else %}Error processing application.{% endif %}', 'error');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    if (otherBtn) otherBtn.disabled = false;
+                });
+            }
         });
     });
     

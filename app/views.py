@@ -1082,10 +1082,27 @@ def approve_host_application(request, application_id):
             
             messages.success(request, f'Host application for {application.user.username} has been approved.')
             
+            # Return JSON response for AJAX requests
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': f'Host application for {application.user.username} has been approved.',
+                    'application_id': application.id,
+                    'new_status': 'approved'
+                })
+            
         except Exception as e:
-            messages.error(request, f'Error approving application: {str(e)}')
+            error_msg = f'Error approving application: {str(e)}'
+            messages.error(request, error_msg)
+            
+            # Return JSON response for AJAX requests
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': error_msg
+                }, status=400)
     
-    return redirect('admin:app_hostapplication_changelist')
+    return redirect('dashboard')
 
 @login_required
 @user_passes_test(is_admin)
@@ -1107,7 +1124,24 @@ def reject_host_application(request, application_id):
             
             messages.success(request, f'Host application for {application.user.username} has been rejected.')
             
+            # Return JSON response for AJAX requests
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': f'Host application for {application.user.username} has been rejected.',
+                    'application_id': application.id,
+                    'new_status': 'rejected'
+                })
+            
         except Exception as e:
-            messages.error(request, f'Error rejecting application: {str(e)}')
+            error_msg = f'Error rejecting application: {str(e)}'
+            messages.error(request, error_msg)
+            
+            # Return JSON response for AJAX requests
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': error_msg
+                }, status=400)
     
-    return redirect('admin:app_hostapplication_changelist')
+    return redirect('dashboard')
