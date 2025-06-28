@@ -378,7 +378,7 @@
 </div>
 
 <!-- Profile Statistics -->
-<div class="container">
+<div class="container" data-is-admin="{% if user.userprofile.role == 'admin' %}true{% else %}false{% endif %}">
     <div class="profile-stats">
         <div class="stat-card">
             <div class="stat-icon">
@@ -553,13 +553,15 @@
                             {% else %}
                             <div class="alert-modern alert-info-modern text-center">
                                 <i class="fas fa-info-circle me-2"></i>You don't have any bookings yet.
-                                <div class="mt-3">
-                                    <a href="{% url 'properties' %}" class="btn-modern">
-                                        <i class="fas fa-search me-2"></i>Browse Properties
-                                    </a>
-                                </div>
                             </div>
                             {% endif %}
+                            
+                            <!-- Always show Browse Properties button -->
+                            <div class="text-center mt-4">
+                                <a href="{% url 'properties' %}" class="btn-modern">
+                                    <i class="fas fa-search me-2"></i>Browse Properties
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -859,15 +861,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Auto-refresh for admin applications
-    {% if user_role == 'admin' %}
-    setInterval(() => {
-        const applicationsTab = document.getElementById('applications');
-        if (applicationsTab && applicationsTab.classList.contains('active')) {
-            // Refresh applications every 30 seconds if admin is viewing the tab
-            location.reload();
-        }
-    }, 30000);
-    {% endif %}
+    const isAdmin = document.querySelector('.container').dataset.isAdmin === 'true';
+    
+    if (isAdmin) {
+        setInterval(() => {
+            const applicationsTab = document.getElementById('applications');
+            if (applicationsTab && applicationsTab.classList.contains('active')) {
+                // Refresh applications every 30 seconds if admin is viewing the tab
+                location.reload();
+            }
+        }, 30000);
+    }
     
     // Notification for new messages/updates
     function checkForUpdates() {
