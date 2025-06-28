@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
+from datetime import timedelta, datetime
 
 class Property(models.Model):
     PROPERTY_TYPES = (
@@ -94,19 +95,123 @@ class Booking(models.Model):
         ('cancelled', 'Cancelled'),
         ('completed', 'Completed'),
     ]
+    
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded'),
+    ]
 
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='bookings')
+    property_obj = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='bookings')
     guest = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
     check_in = models.DateField()
     check_out = models.DateField()
     guests = models.PositiveIntegerField()
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    stripe_session_id = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Booking for {self.property.title} by {self.guest.username}"
+        return f"Booking for {self.property_obj.title} by {self.guest.username}"
+    
+    @property
+    def reservation_expires_at(self):
+        """
+        Calculate when the reservation expires (30 minutes from creation)
+        """
+        return self.created_at + timedelta(minutes=30)
+    
+    @property
+    def is_expired(self):
+        """
+        Check if the reservation has expired
+        """
+        return timezone.now() > self.reservation_expires_at
+    
+    @property
+    def time_remaining_seconds(self):
+        """
+        Get time remaining in seconds (negative if expired)
+        """
+        remaining = self.reservation_expires_at - timezone.now()
+        return int(remaining.total_seconds())
+    
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.check_in and self.check_out:
+            if self.check_in >= self.check_out:
+                raise ValidationError('Check-out date must be after check-in date.')
+    
+    @classmethod
+    def check_availability(cls, property, check_in, check_out, exclude_booking=None):
+        """
+        Check if the given date range is available for booking.
+        Returns True if available, False if conflicting bookings exist.
+        """
+        # Convert to date objects if they're strings
+        if isinstance(check_in, str):
+            check_in = datetime.strptime(check_in, '%Y-%m-%d').date()
+        if isinstance(check_out, str):
+            check_out = datetime.strptime(check_out, '%Y-%m-%d').date()
+        
+        # Query for conflicting bookings
+        conflicting_bookings = cls.objects.filter(
+            property_obj=property,
+            status__in=['pending', 'confirmed'],  # Only check active bookings
+            # Check for date range overlaps
+            check_in__lt=check_out,
+            check_out__gt=check_in
+        )
+        
+        # Exclude the current booking if we're updating
+        if exclude_booking:
+            conflicting_bookings = conflicting_bookings.exclude(id=exclude_booking.id)
+        
+        return not conflicting_bookings.exists()
+    
+    @classmethod
+    def get_unavailable_dates(cls, property, start_date=None, end_date=None):
+        """
+        Get list of unavailable dates for a property within a date range.
+        Returns a list of date objects that are fully or partially booked.
+        """
+        if not start_date:
+            start_date = timezone.now().date()
+        if not end_date:
+            end_date = start_date + timedelta(days=365)
+        
+        # Get all active bookings in the date range
+        bookings = cls.objects.filter(
+            property_obj=property,
+            status__in=['pending', 'confirmed'],
+            check_in__lte=end_date,
+            check_out__gte=start_date
+        )
+        
+        unavailable_dates = set()
+        for booking in bookings:
+            current_date = max(booking.check_in, start_date)
+            end_booking = min(booking.check_out, end_date)
+            
+            while current_date < end_booking:
+                unavailable_dates.add(current_date)
+                current_date += timedelta(days=1)
+        
+        return sorted(list(unavailable_dates))
+
+    class Meta:
+        # Add unique constraint to prevent double bookings at database level
+        unique_together = [
+            ('property_obj', 'check_in', 'check_out', 'status'),
+        ]
+        indexes = [
+            models.Index(fields=['property_obj', 'check_in', 'check_out']),
+            models.Index(fields=['status', 'payment_status']),
+        ]
 
 class Review(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='reviews')

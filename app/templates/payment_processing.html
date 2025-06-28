@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Payment Processing - {{ booking.property_obj.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-credit-card me-2"></i>Payment Processing
+                    </h4>
+                </div>
+                <div class="card-body text-center">
+                    <!-- Booking Details -->
+                    <div class="booking-details mb-4">
+                        <h5>{{ booking.property_obj.title }}</h5>
+                        <p class="text-muted">
+                            <i class="fas fa-calendar me-2"></i>
+                            {{ booking.check_in|date:"M d, Y" }} - {{ booking.check_out|date:"M d, Y" }}
+                        </p>
+                        <p class="text-muted">
+                            <i class="fas fa-users me-2"></i>
+                            {{ booking.guests }} guest{{ booking.guests|pluralize }}
+                        </p>
+                        <h6 class="text-primary">Total: ${{ booking.total_price }}</h6>
+                    </div>
+
+                    <!-- Countdown Timer -->
+                    <div class="countdown-section mb-4">
+                        <div class="countdown-timer" id="countdownTimer">
+                            <div class="timer-display">
+                                <span class="minutes" id="minutes">30</span>:<span class="seconds" id="seconds">00</span>
+                            </div>
+                            <p class="timer-label">Time remaining to complete payment</p>
+                        </div>
+                    </div>
+
+                    <!-- Payment Status -->
+                    <div class="payment-status mb-4">
+                        <div class="status-indicator" id="statusIndicator">
+                            <i class="fas fa-clock text-warning me-2"></i>
+                            <span id="statusText">Waiting for payment completion...</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        </a>
+                        <button class="btn btn-primary me-2" onclick="proceedToPayment()" id="paymentBtn">
+                            <i class="fas fa-credit-card me-2"></i>Proceed to Payment
+                        </button>
+                        <button class="btn btn-danger" onclick="cancelBooking()" id="cancelBtn">
+                            <i class="fas fa-times me-2"></i>Cancel Booking
+                        </button>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="progress mt-4" style="height: 8px;">
+                        <div class="progress-bar bg-warning" id="progressBar" role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form for cancellation -->
+<form id="cancelForm" method="post" action="{% url 'cancel_booking' booking.id %}" style="display: none;">
+    {% csrf_token %}
+</form>
+
+<!-- Pass data to JavaScript -->
+<script>
+    window.bookingId = {{ booking.id }};
+    window.initialTimeRemaining = {{ booking.time_remaining_seconds }};
+</script>
+
+<!-- Load external JavaScript -->
+<script src="{% static 'js/payment_processing.js' %}"></script>
+
+<style>
+.countdown-timer {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--primary);
+    margin: 2rem 0;
+}
+
+.timer-display {
+    font-family: 'Courier New', monospace;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 15px;
+    display: inline-block;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.timer-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+}
+
+.status-indicator {
+    font-size: 1.1rem;
+    font-weight: 500;
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.urgent {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.progress {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 1s ease-in-out, background-color 0.3s ease;
+}
+
+.booking-details {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 1.5rem;
+    border-radius: 10px;
+    border: 1px solid #dee2e6;
+}
+
+.action-buttons {
+    margin-top: 2rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+</style>
+{% endblock %} 

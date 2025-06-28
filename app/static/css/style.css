@@ -327,4 +327,97 @@ footer a:hover {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+/* Availability Status Styles */
+.availability-status {
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    min-height: 1rem;
+}
+
+.availability-message {
+    margin-top: 1rem;
+    min-height: 3rem;
+}
+
+.availability-message .alert {
+    margin-bottom: 0;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+}
+
+.availability-message .alert-success {
+    background-color: rgba(0, 132, 137, 0.1);
+    color: var(--success);
+    border-left: 3px solid var(--success);
+}
+
+.availability-message .alert-danger {
+    background-color: rgba(255, 90, 95, 0.1);
+    color: var(--danger);
+    border-left: 3px solid var(--danger);
+}
+
+.availability-message .alert-warning {
+    background-color: rgba(255, 180, 0, 0.1);
+    color: var(--warning);
+    border-left: 3px solid var(--warning);
+}
+
+/* Disabled date inputs */
+.form-input:disabled {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* Loading states */
+.reserve-btn:disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.reserve-btn:disabled:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    transform: none;
+}
+
+/* Booking form improvements */
+.booking-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.booking-form .form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.booking-form .form-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.1);
+    outline: none;
+}
+
+.booking-form .form-input:disabled {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .availability-message {
+        margin-top: 0.75rem;
+    }
+    
+    .availability-message .alert {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.75rem;
+    }
 } 

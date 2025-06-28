@@ -531,9 +531,9 @@
                                 <div class="col-md-6 mb-4">
                                     <div class="card h-100 border-0 shadow-sm">
                                         <div class="card-body">
-                                            <h5 class="card-title">{{ booking.property.title }}</h5>
+                                            <h5 class="card-title">{{ booking.property_obj.title }}</h5>
                                             <p class="text-muted mb-2">
-                                                <i class="fas fa-map-marker-alt me-2"></i>{{ booking.property.location }}
+                                                <i class="fas fa-map-marker-alt me-2"></i>{{ booking.property_obj.location }}
                                             </p>
                                             <div class="mb-3">
                                                 <span class="badge-modern {% if booking.status == 'confirmed' %}badge-success-modern{% elif booking.status == 'pending' %}badge-warning-modern{% else %}badge-danger-modern{% endif %}">
@@ -638,7 +638,7 @@
                                 <div class="col-md-6 mb-4">
                                     <div class="card h-100 border-0 shadow-sm">
                                         <div class="card-body">
-                                            <h5 class="card-title">{{ review.property.title }}</h5>
+                                            <h5 class="card-title">{{ review.property_obj.title }}</h5>
                                             <div class="mb-2">
                                                 {% for i in "12345" %}
                                                 <i class="fas fa-star {% if forloop.counter <= review.rating %}text-warning{% else %}text-muted{% endif %}"></i>

@@ -1,0 +1,112 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .action-buttons {
+        white-space: nowrap;
+    }
+    
+    .action-buttons .button {
+        display: inline-block;
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 12px;
+        text-decoration: none;
+        margin-right: 5px;
+        transition: background-color 0.2s;
+    }
+    
+    .action-buttons .button:hover {
+        background: #218838;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .action-buttons .button.reject-btn {
+        background: #dc3545;
+    }
+    
+    .action-buttons .button.reject-btn:hover {
+        background: #c82333;
+    }
+    
+    .action-buttons .button:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+    }
+    
+    .status-approved {
+        color: #28a745;
+        font-weight: bold;
+    }
+    
+    .status-rejected {
+        color: #dc3545;
+        font-weight: bold;
+    }
+    
+    .status-pending {
+        color: #ffc107;
+        font-weight: bold;
+    }
+    
+    /* Hidden form for CSRF submission */
+    .csrf-form {
+        display: none;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Create hidden form for CSRF submission
+    const csrfForm = document.createElement('form');
+    csrfForm.className = 'csrf-form';
+    csrfForm.method = 'POST';
+    
+    // Get CSRF token from the page
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = csrfToken;
+    csrfForm.appendChild(csrfInput);
+    
+    document.body.appendChild(csrfForm);
+    
+    // Add click handlers to approve/reject buttons
+    document.querySelectorAll('.action-buttons .button').forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const action = this.textContent.trim().toLowerCase();
+            const confirmed = confirm(`Are you sure you want to ${action} this host application?`);
+            
+            if (!confirmed) {
+                return false;
+            }
+            
+            // Show loading state
+            const originalText = this.textContent;
+            this.textContent = `${action.charAt(0).toUpperCase() + action.slice(1)}ing...`;
+            this.style.pointerEvents = 'none';
+            
+            // Submit form to the button's href
+            csrfForm.action = this.href;
+            csrfForm.submit();
+            
+            // Re-enable after 5 seconds as fallback
+            setTimeout(() => {
+                this.textContent = originalText;
+                this.style.pointerEvents = 'auto';
+            }, 5000);
+        });
+    });
+});
+</script>
+{% endblock %} 

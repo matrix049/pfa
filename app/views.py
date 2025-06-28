@@ -175,53 +175,283 @@ def create_booking(request, pk):
         check_in = request.POST.get('check_in')
         check_out = request.POST.get('check_out')
         guests = int(request.POST.get('guests', 1))
-        # Calculate total price (simple version)
-        nights = (timezone.datetime.strptime(check_out, '%Y-%m-%d').date() - timezone.datetime.strptime(check_in, '%Y-%m-%d').date()).days
-        if nights < 1:
+        
+        # Validate dates
+        try:
+            check_in_date = timezone.datetime.strptime(check_in, '%Y-%m-%d').date()
+            check_out_date = timezone.datetime.strptime(check_out, '%Y-%m-%d').date()
+        except ValueError:
+            messages.error(request, 'Invalid date format.')
+            return redirect('property_detail', pk=pk)
+        
+        if check_in_date >= check_out_date:
             messages.error(request, 'Check-out must be after check-in.')
             return redirect('property_detail', pk=pk)
-        total_price = (property.price_per_night * nights) + property.cleaning_fee + property.service_fee
-        # Create Stripe Checkout session
-        session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=[{
-                'price_data': {
-                    'currency': 'usd',
-                    'product_data': {
-                        'name': f'Booking for {property.title}',
-                    },
-                    'unit_amount': int(total_price * 100),
-                },
-                'quantity': 1,
-            }],
-            mode='payment',
-            success_url=request.build_absolute_uri(f'/booking/success/?property={property.id}&check_in={check_in}&check_out={check_out}&guests={guests}&total={total_price}'),
-            cancel_url=request.build_absolute_uri(request.path),
-            customer_email=request.user.email,
-        )
-        return redirect(session.url)
+        
+        # Check availability with database transaction
+        with transaction.atomic():
+            # Double-check availability before creating booking
+            if not Booking.check_availability(property, check_in_date, check_out_date):
+                messages.error(request, 'Selected dates are no longer available. Please choose different dates.')
+                return redirect('property_detail', pk=pk)
+            
+            # Calculate total price
+            nights = (check_out_date - check_in_date).days
+            total_price = (property.price_per_night * nights) + property.cleaning_fee + property.service_fee
+            
+            # Create a temporary booking to hold the slot
+            temp_booking = Booking.objects.create(
+                property=property,
+                guest=request.user,
+                check_in=check_in_date,
+                check_out=check_out_date,
+                guests=guests,
+                total_price=total_price,
+                status='pending',
+                payment_status='pending'
+            )
+            
+            # Create Stripe Checkout session
+            try:
+                session = stripe.checkout.Session.create(
+                    payment_method_types=['card'],
+                    line_items=[{
+                        'price_data': {
+                            'currency': 'usd',
+                            'product_data': {
+                                'name': f'Booking for {property.title}',
+                                'description': f'{nights} nights from {check_in} to {check_out}',
+                            },
+                            'unit_amount': int(total_price * 100),
+                        },
+                        'quantity': 1,
+                    }],
+                    mode='payment',
+                    success_url=request.build_absolute_uri(f'/booking/success/?booking_id={temp_booking.id}'),
+                    cancel_url=request.build_absolute_uri(f'/booking/cancel/?booking_id={temp_booking.id}'),
+                    customer_email=request.user.email,
+                    metadata={
+                        'booking_id': str(temp_booking.id),
+                        'property_id': str(property.id),
+                    }
+                )
+                
+                # Update booking with session ID
+                temp_booking.stripe_session_id = session.id
+                temp_booking.save()
+                
+                # Redirect to payment processing page instead of directly to Stripe
+                return redirect('payment_processing', booking_id=temp_booking.id)
+                
+            except stripe.error.StripeError as e:
+                # If Stripe fails, delete the temporary booking
+                temp_booking.delete()
+                messages.error(request, f'Payment processing error: {str(e)}')
+                return redirect('property_detail', pk=pk)
+    
     return redirect('property_detail', pk=pk)
 
 @csrf_exempt
 def booking_success(request):
-    # Create the booking after successful payment
-    property_id = request.GET.get('property')
-    check_in = request.GET.get('check_in')
-    check_out = request.GET.get('check_out')
-    guests = int(request.GET.get('guests', 1))
-    total_price = request.GET.get('total')
-    property = get_object_or_404(Property, pk=property_id)
-    Booking.objects.create(
-        property=property,
-        guest=request.user,
-        check_in=check_in,
-        check_out=check_out,
-        guests=guests,
-        total_price=total_price,
-        status='confirmed',
-    )
-    messages.success(request, 'Booking created and payment successful!')
+    """Handle successful payment and confirm booking"""
+    booking_id = request.GET.get('booking_id')
+    if not booking_id:
+        messages.error(request, 'Invalid booking reference.')
+        return redirect('dashboard')
+    
+    try:
+        with transaction.atomic():
+            booking = get_object_or_404(Booking, id=booking_id, guest=request.user)
+            
+            # Verify the booking is still available
+            if not Booking.check_availability(booking.property_obj, booking.check_in, booking.check_out, exclude_booking=booking):
+                # Cancel the booking if no longer available
+                booking.status = 'cancelled'
+                booking.payment_status = 'failed'
+                booking.save()
+                messages.error(request, 'The selected dates are no longer available. Your payment will be refunded.')
+                return redirect('dashboard')
+            
+            # Update booking status
+            booking.status = 'confirmed'
+            booking.payment_status = 'paid'
+            booking.save()
+            
+            messages.success(request, 'Booking confirmed and payment successful!')
+            return redirect('dashboard')
+            
+    except Exception as e:
+        messages.error(request, f'Error processing booking: {str(e)}')
+        return redirect('dashboard')
+
+@login_required
+def booking_cancel(request):
+    """Handle cancelled payment"""
+    booking_id = request.GET.get('booking_id')
+    if booking_id:
+        try:
+            booking = get_object_or_404(Booking, id=booking_id, guest=request.user)
+            booking.status = 'cancelled'
+            booking.payment_status = 'failed'
+            booking.save()
+            messages.info(request, 'Booking cancelled.')
+        except Booking.DoesNotExist:
+            pass
+    
     return redirect('dashboard')
+
+@login_required
+def payment_processing(request, booking_id):
+    """Show payment processing page with countdown timer"""
+    try:
+        booking = get_object_or_404(Booking, id=booking_id, guest=request.user)
+        
+        # Only show for pending bookings
+        if booking.status != 'pending' or booking.payment_status != 'pending':
+            messages.info(request, 'This booking is no longer pending payment.')
+            return redirect('dashboard')
+        
+        # Check if booking has expired
+        if booking.is_expired:
+            booking.status = 'cancelled'
+            booking.payment_status = 'failed'
+            booking.save()
+            messages.warning(request, 'Your reservation has expired. Please try booking again.')
+            return redirect('dashboard')
+        
+        return render(request, 'payment_processing.html', {'booking': booking})
+        
+    except Booking.DoesNotExist:
+        messages.error(request, 'Booking not found.')
+        return redirect('dashboard')
+
+@login_required
+def get_stripe_session_url(request, booking_id):
+    """Get Stripe session URL for a booking"""
+    try:
+        booking = get_object_or_404(Booking, id=booking_id, guest=request.user)
+        
+        if not booking.stripe_session_id:
+            return JsonResponse({'error': 'No payment session found'}, status=404)
+        
+        # Retrieve the session from Stripe
+        session = stripe.checkout.Session.retrieve(booking.stripe_session_id)
+        
+        if session.status == 'open':
+            return JsonResponse({'url': session.url})
+        else:
+            return JsonResponse({'error': 'Payment session is no longer valid'}, status=400)
+            
+    except Booking.DoesNotExist:
+        return JsonResponse({'error': 'Booking not found'}, status=404)
+    except stripe.error.StripeError as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+def check_availability_api(request, property_id):
+    """API endpoint to check availability for a property"""
+    if request.method == 'GET':
+        try:
+            property = get_object_or_404(Property, id=property_id)
+            check_in = request.GET.get('check_in')
+            check_out = request.GET.get('check_out')
+            
+            if not check_in or not check_out:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Both check_in and check_out dates are required'
+                })
+            
+            # Check availability
+            is_available = Booking.check_availability(property, check_in, check_out)
+            
+            return JsonResponse({
+                'success': True,
+                'available': is_available,
+                'property_id': property_id,
+                'check_in': check_in,
+                'check_out': check_out
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+    
+    return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+
+def get_unavailable_dates_api(request, property_id):
+    """API endpoint to get unavailable dates for a property"""
+    if request.method == 'GET':
+        try:
+            property = get_object_or_404(Property, id=property_id)
+            start_date = request.GET.get('start_date')
+            end_date = request.GET.get('end_date')
+            
+            # Convert dates if provided
+            if start_date:
+                start_date = timezone.datetime.strptime(start_date, '%Y-%m-%d').date()
+            if end_date:
+                end_date = timezone.datetime.strptime(end_date, '%Y-%m-%d').date()
+            
+            unavailable_dates = Booking.get_unavailable_dates(property, start_date, end_date)
+            
+            # Convert dates to strings for JSON serialization
+            unavailable_dates_str = [date.strftime('%Y-%m-%d') for date in unavailable_dates]
+            
+            return JsonResponse({
+                'success': True,
+                'property_id': property_id,
+                'unavailable_dates': unavailable_dates_str
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+    
+    return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+
+def get_booking_status_api(request, booking_id):
+    """API endpoint to get booking status and time remaining"""
+    if request.method == 'GET':
+        try:
+            booking = get_object_or_404(Booking, id=booking_id)
+            
+            # Check if user has permission to view this booking
+            if not request.user.is_authenticated or booking.guest != request.user:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Permission denied'
+                }, status=403)
+            
+            time_remaining = booking.time_remaining_seconds
+            is_expired = booking.is_expired
+            
+            return JsonResponse({
+                'success': True,
+                'booking_id': booking_id,
+                'status': booking.status,
+                'payment_status': booking.payment_status,
+                'time_remaining_seconds': time_remaining,
+                'is_expired': is_expired,
+                'reservation_expires_at': booking.reservation_expires_at.isoformat(),
+                'created_at': booking.created_at.isoformat()
+            })
+            
+        except Booking.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Booking not found'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+    
+    return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
 
 @login_required
 def cancel_booking(request, pk):
@@ -346,61 +576,51 @@ def become_host(request):
         try:
             with transaction.atomic():
                 # Extract form data
-                property_type = request.POST.get('property_type')
-                space_type = request.POST.get('space_type')
-                guests = int(request.POST.get('guests', 1))
-                bedrooms = int(request.POST.get('bedrooms', 1))
-                beds = int(request.POST.get('beds', 1))
-                bathrooms = int(request.POST.get('bathrooms', 1))
-                highlights = request.POST.get('highlights', '')
-                title = request.POST.get('title')
+                business_name = request.POST.get('business_name')
+                business_address = request.POST.get('business_address')
+                business_phone = request.POST.get('business_phone')
                 description = request.POST.get('description')
-                address = request.POST.get('address')
-                price = request.POST.get('price')
                 
                 # Validate required fields
-                if not all([property_type, space_type, title, description, address, price]):
+                if not all([business_name, business_address, business_phone, description]):
                     messages.error(request, 'Please fill in all required fields.')
                     return render(request, 'become_host.html')
                 
-                # Create the property
-                property = Property.objects.create(
-                    host=request.user,
-                    title=title,
+                # Check if user already has a pending application
+                existing_application = HostApplication.objects.filter(
+                    user=request.user, 
+                    status='pending'
+                ).first()
+                
+                if existing_application:
+                    messages.info(request, 'You already have a pending host application.')
+                    return redirect('dashboard')
+                
+                # Create the host application
+                host_application = HostApplication.objects.create(
+                    user=request.user,
+                    business_name=business_name,
+                    business_address=business_address,
+                    business_phone=business_phone,
                     description=description,
-                    property_type=property_type,
-                    space_type=space_type,
-                    location=address,
-                    price_per_night=float(price),
-                    bedrooms=bedrooms,
-                    bathrooms=bathrooms,
-                    beds=beds,
-                    max_guests=guests,
-                    cleaning_fee=50.00,  # Default values
-                    service_fee=30.00,   # Default values
-                    highlights=highlights
+                    status='pending'
                 )
                 
-                # Handle multiple image uploads
-                files = request.FILES.getlist('photos')
-                if files:
-                    for index, file in enumerate(files):
-                        PropertyImage.objects.create(
-                            property=property,
-                            image=file,
-                            is_primary=(index == 0)  # First image is primary
-                        )
+                # Handle identity document upload if provided
+                if 'identity_document' in request.FILES:
+                    host_application.identity_document = request.FILES['identity_document']
+                    host_application.save()
                 
-                # Update user profile to host
+                # Update user profile to pending_host
                 profile = request.user.userprofile
-                profile.role = 'host'
+                profile.role = 'pending_host'
                 profile.save()
                 
-                messages.success(request, 'Congratulations! Your property has been listed and you are now a host.')
+                messages.success(request, 'Your host application has been submitted successfully! We will review it and get back to you soon.')
                 return redirect('dashboard')
                 
         except Exception as e:
-            messages.error(request, f'Error creating listing: {str(e)}')
+            messages.error(request, f'Error submitting application: {str(e)}')
             return render(request, 'become_host.html')
 
     return render(request, 'become_host.html')
@@ -672,3 +892,222 @@ def change_language(request, language_code):
     # Redirect back to the previous page or dashboard
     next_url = request.GET.get('next', 'dashboard')
     return redirect(next_url)
+
+@csrf_exempt
+def stripe_webhook(request):
+    """
+    Handle Stripe webhook events for payment confirmation and failure
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    if request.method != 'POST':
+        logger.warning(f"Webhook received non-POST request: {request.method}")
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    # Get the webhook payload
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    
+    if not sig_header:
+        logger.error("Webhook received without Stripe signature")
+        return JsonResponse({'error': 'No signature provided'}, status=400)
+    
+    # Verify webhook signature
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
+        )
+    except ValueError as e:
+        logger.error(f"Invalid payload: {e}")
+        return JsonResponse({'error': 'Invalid payload'}, status=400)
+    except stripe.error.SignatureVerificationError as e:
+        logger.error(f"Invalid signature: {e}")
+        return JsonResponse({'error': 'Invalid signature'}, status=400)
+    
+    # Handle the event
+    try:
+        event_type = event['type']
+        logger.info(f"Processing webhook event: {event_type}")
+        
+        if event_type == 'checkout.session.completed':
+            return handle_checkout_session_completed(event)
+        elif event_type == 'payment_intent.succeeded':
+            return handle_payment_intent_succeeded(event)
+        elif event_type == 'payment_intent.payment_failed':
+            return handle_payment_intent_failed(event)
+        else:
+            logger.info(f"Unhandled event type: {event_type}")
+            return JsonResponse({'status': 'ignored'})
+            
+    except Exception as e:
+        logger.error(f"Error processing webhook event {event.get('type', 'unknown')}: {str(e)}")
+        return JsonResponse({'error': 'Internal server error'}, status=500)
+
+def handle_checkout_session_completed(event):
+    """
+    Handle successful checkout session completion
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    session = event['data']['object']
+    booking_id = session.get('metadata', {}).get('booking_id')
+    
+    if not booking_id:
+        logger.error("Checkout session completed without booking_id in metadata")
+        return JsonResponse({'error': 'No booking_id in metadata'}, status=400)
+    
+    try:
+        with transaction.atomic():
+            booking = Booking.objects.get(id=booking_id)
+            
+            # Verify the booking is still available
+            if not Booking.check_availability(booking.property_obj, booking.check_in, booking.check_out, exclude_booking=booking):
+                # Cancel the booking if no longer available
+                booking.status = 'cancelled'
+                booking.payment_status = 'failed'
+                booking.save()
+                logger.warning(f"Booking {booking_id} cancelled due to availability conflict")
+                return JsonResponse({'status': 'booking_cancelled'})
+            
+            # Update booking status
+            booking.status = 'confirmed'
+            booking.payment_status = 'paid'
+            booking.save()
+            
+            logger.info(f"Booking {booking_id} confirmed successfully via webhook")
+            return JsonResponse({'status': 'success'})
+            
+    except Booking.DoesNotExist:
+        logger.error(f"Booking {booking_id} not found")
+        return JsonResponse({'error': 'Booking not found'}, status=404)
+    except Exception as e:
+        logger.error(f"Error processing checkout session for booking {booking_id}: {str(e)}")
+        return JsonResponse({'error': 'Internal server error'}, status=500)
+
+def handle_payment_intent_succeeded(event):
+    """
+    Handle successful payment intent
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    payment_intent = event['data']['object']
+    session_id = payment_intent.get('metadata', {}).get('session_id')
+    
+    if not session_id:
+        logger.info("Payment intent succeeded without session_id, ignoring")
+        return JsonResponse({'status': 'ignored'})
+    
+    try:
+        booking = Booking.objects.get(stripe_session_id=session_id)
+        
+        # Only update if booking is still pending
+        if booking.status == 'pending' and booking.payment_status == 'pending':
+            with transaction.atomic():
+                # Verify availability again
+                if not Booking.check_availability(booking.property_obj, booking.check_in, booking.check_out, exclude_booking=booking):
+                    booking.status = 'cancelled'
+                    booking.payment_status = 'failed'
+                    booking.save()
+                    logger.warning(f"Booking {booking.id} cancelled due to availability conflict")
+                    return JsonResponse({'status': 'booking_cancelled'})
+                
+                booking.status = 'confirmed'
+                booking.payment_status = 'paid'
+                booking.save()
+                
+                logger.info(f"Booking {booking.id} confirmed via payment intent webhook")
+                return JsonResponse({'status': 'success'})
+        else:
+            logger.info(f"Booking {booking.id} already processed, ignoring")
+            return JsonResponse({'status': 'already_processed'})
+            
+    except Booking.DoesNotExist:
+        logger.error(f"Booking with session_id {session_id} not found")
+        return JsonResponse({'error': 'Booking not found'}, status=404)
+    except Exception as e:
+        logger.error(f"Error processing payment intent for session {session_id}: {str(e)}")
+        return JsonResponse({'error': 'Internal server error'}, status=500)
+
+def handle_payment_intent_failed(event):
+    """
+    Handle failed payment intent
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    payment_intent = event['data']['object']
+    session_id = payment_intent.get('metadata', {}).get('session_id')
+    
+    if not session_id:
+        logger.info("Payment intent failed without session_id, ignoring")
+        return JsonResponse({'status': 'ignored'})
+    
+    try:
+        booking = Booking.objects.get(stripe_session_id=session_id)
+        
+        # Update booking status to failed
+        booking.status = 'cancelled'
+        booking.payment_status = 'failed'
+        booking.save()
+        
+        logger.info(f"Booking {booking.id} marked as failed due to payment failure")
+        return JsonResponse({'status': 'booking_cancelled'})
+        
+    except Booking.DoesNotExist:
+        logger.error(f"Booking with session_id {session_id} not found")
+        return JsonResponse({'error': 'Booking not found'}, status=404)
+    except Exception as e:
+        logger.error(f"Error processing failed payment intent for session {session_id}: {str(e)}")
+        return JsonResponse({'error': 'Internal server error'}, status=500)
+
+@login_required
+@user_passes_test(is_admin)
+def approve_host_application(request, application_id):
+    """Approve a specific host application"""
+    if request.method == 'POST':
+        try:
+            application = get_object_or_404(HostApplication, id=application_id, status='pending')
+            
+            # Update application status
+            application.status = 'approved'
+            application.save()
+            
+            # Update user profile role
+            profile = application.user.userprofile
+            profile.role = 'host'
+            profile.save()
+            
+            messages.success(request, f'Host application for {application.user.username} has been approved.')
+            
+        except Exception as e:
+            messages.error(request, f'Error approving application: {str(e)}')
+    
+    return redirect('admin:app_hostapplication_changelist')
+
+@login_required
+@user_passes_test(is_admin)
+def reject_host_application(request, application_id):
+    """Reject a specific host application"""
+    if request.method == 'POST':
+        try:
+            application = get_object_or_404(HostApplication, id=application_id, status='pending')
+            
+            # Update application status
+            application.status = 'rejected'
+            application.save()
+            
+            # Update user profile role back to regular user if they were pending
+            profile = application.user.userprofile
+            if profile.role == 'pending_host':
+                profile.role = 'user'
+                profile.save()
+            
+            messages.success(request, f'Host application for {application.user.username} has been rejected.')
+            
+        except Exception as e:
+            messages.error(request, f'Error rejecting application: {str(e)}')
+    
+    return redirect('admin:app_hostapplication_changelist')

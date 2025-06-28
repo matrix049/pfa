@@ -1524,12 +1524,15 @@
                             <div>
                                 <label class="form-label">CHECK-IN</label>
                                 <input type="date" name="check_in" class="form-input" required min="{{ today|date:'Y-m-d' }}" id="checkInDate">
+                                <div class="availability-status" id="checkInStatus"></div>
                             </div>
                             <div>
                                 <label class="form-label">CHECK-OUT</label>
                                 <input type="date" name="check_out" class="form-input" required min="{{ today|date:'Y-m-d' }}" id="checkOutDate">
+                                <div class="availability-status" id="checkOutStatus"></div>
                             </div>
                         </div>
+                        <div class="availability-message" id="availabilityMessage"></div>
                     </div>
 
                     <div class="form-group">
@@ -1588,8 +1591,8 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="reserve-btn" id="reserveBtn">
-                        Pay & Reserve with Stripe
+                    <button type="submit" class="reserve-btn" id="reserveBtn" disabled>
+                        Check Availability
                     </button>
                     <p class="booking-note text-success">Test card: 4242 4242 4242 4242, any future date, any CVC</p>
                     <p class="booking-note">You will be redirected to Stripe for secure payment.</p>
@@ -2056,6 +2059,108 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
     const btn = document.getElementById('reserveBtn');
     btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
     btn.disabled = true;
+});
+
+// Availability checking functions
+let availabilityCheckTimeout;
+
+function checkAvailability() {
+    const checkIn = document.getElementById('checkInDate').value;
+    const checkOut = document.getElementById('checkOutDate').value;
+    const reserveBtn = document.getElementById('reserveBtn');
+    const availabilityMessage = document.getElementById('availabilityMessage');
+    
+    // Clear previous timeout
+    if (availabilityCheckTimeout) {
+        clearTimeout(availabilityCheckTimeout);
+    }
+    
+    // Reset button state
+    reserveBtn.disabled = true;
+    reserveBtn.textContent = 'Check Availability';
+    availabilityMessage.innerHTML = '';
+    
+    if (!checkIn || !checkOut) {
+        return;
+    }
+    
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    const nights = Math.floor((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+    
+    if (nights <= 0) {
+        availabilityMessage.innerHTML = '<div class="alert alert-warning">Check-out date must be after check-in date</div>';
+        return;
+    }
+    
+    // Debounce the API call
+    availabilityCheckTimeout = setTimeout(() => {
+        // Show loading state
+        reserveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Checking...';
+        
+        // Make API call to check availability
+        fetch(`/api/property/{{ property.id }}/availability/?check_in=${checkIn}&check_out=${checkOut}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.available) {
+                        reserveBtn.disabled = false;
+                        reserveBtn.innerHTML = 'Pay & Reserve with Stripe';
+                        availabilityMessage.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>Dates are available!</div>';
+                    } else {
+                        reserveBtn.disabled = true;
+                        reserveBtn.textContent = 'Dates Not Available';
+                        availabilityMessage.innerHTML = '<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>Selected dates are not available. Please choose different dates.</div>';
+                    }
+                } else {
+                    reserveBtn.disabled = true;
+                    reserveBtn.textContent = 'Error Checking Availability';
+                    availabilityMessage.innerHTML = `<div class="alert alert-danger">Error: ${data.error}</div>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error checking availability:', error);
+                reserveBtn.disabled = true;
+                reserveBtn.textContent = 'Error Checking Availability';
+                availabilityMessage.innerHTML = '<div class="alert alert-danger">Error checking availability. Please try again.</div>';
+            });
+    }, 500); // 500ms debounce
+}
+
+// Load unavailable dates on page load
+function loadUnavailableDates() {
+    const today = new Date();
+    const endDate = new Date();
+    endDate.setFullYear(endDate.getFullYear() + 1); // Check next year
+    
+    fetch(`/api/property/{{ property.id }}/unavailable-dates/?start_date=${today.toISOString().split('T')[0]}&end_date=${endDate.toISOString().split('T')[0]}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Store unavailable dates for reference
+                window.unavailableDates = data.unavailable_dates;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading unavailable dates:', error);
+        });
+}
+
+// Add event listeners for date changes
+document.addEventListener('DOMContentLoaded', function() {
+    // Load unavailable dates
+    loadUnavailableDates();
+    
+    // Add change listeners for date inputs
+    document.getElementById('checkInDate').addEventListener('change', function() {
+        updateCheckout();
+        checkAvailability();
+    });
+    
+    document.getElementById('checkOutDate').addEventListener('change', function() {
+        calculateTotal();
+        checkAvailability();
+    });
 });
 </script>
 {% endblock %}

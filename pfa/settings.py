@@ -130,3 +130,4 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Stripe test keys (replace with your own for production)
 STRIPE_PUBLIC_KEY = 'pk_test_TYooMQauvdEDq54NiTphI7jx'  # Replace with your test public key
 STRIPE_SECRET_KEY = 'sk_test_BQokikJOvBiI2HlWgH4olfQ2'  # Replace with your test secret key
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', 'whsec_test_webhook_secret')  # Replace with your webhook secret

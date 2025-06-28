@@ -453,11 +453,12 @@
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <form method="post" action="{% url 'logout' %}" class="d-inline w-100">
+                                    <a href="#" class="dropdown-item-modern text-danger" id="logoutLink" style="text-decoration: none;">
+                                        <i class="fas fa-sign-out-alt"></i>{% if is_french %}Se déconnecter{% else %}Logout{% endif %}
+                                    </a>
+                                    <!-- Hidden form for logout -->
+                                    <form method="post" action="{% url 'logout' %}" id="logoutForm" style="display: none;">
                                         {% csrf_token %}
-                                        <button type="submit" class="dropdown-item-modern text-danger w-100 border-0 bg-transparent">
-                                            <i class="fas fa-sign-out-alt"></i>{% if is_french %}Se déconnecter{% else %}Logout{% endif %}
-                                        </button>
                                     </form>
                                 </li>
                             </ul>
@@ -601,12 +602,44 @@
         // Loading states for buttons
         document.querySelectorAll('form').forEach(form => {
             form.addEventListener('submit', function(e) {
+                // Don't interfere with logout form
+                if (form.id === 'logoutForm') {
+                    return;
+                }
+                
                 const submitBtn = form.querySelector('button[type="submit"]');
                 if (submitBtn) {
                     submitBtn.innerHTML = '<div class="loading-spinner me-2"></div>Loading...';
                     submitBtn.disabled = true;
                 }
             });
+        });
+
+        // Simple and reliable logout handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const logoutLink = document.getElementById('logoutLink');
+            const logoutForm = document.getElementById('logoutForm');
+            
+            if (logoutLink && logoutForm) {
+                logoutLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Show loading state
+                    const originalText = logoutLink.innerHTML;
+                    logoutLink.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>{% if is_french %}Déconnexion...{% else %}Logging out...{% endif %}';
+                    logoutLink.style.pointerEvents = 'none';
+                    
+                    // Submit the form
+                    logoutForm.submit();
+                    
+                    // Fallback: re-enable after 3 seconds if form doesn't submit
+                    setTimeout(() => {
+                        logoutLink.innerHTML = originalText;
+                        logoutLink.style.pointerEvents = 'auto';
+                    }, 3000);
+                });
+            }
         });
 
         // Add active class to current nav item
