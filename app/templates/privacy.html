@@ -1,79 +1,43 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Privacy Policy - StayBooking{% endblock %}
+{% block title %}{% if is_french %}Politique de confidentialité - StayBooking{% else %}Privacy Policy - StayBooking{% endif %}{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <h1 class="mb-4">Privacy Policy</h1>
-    
-    <div class="card">
-        <div class="card-body">
-            <h2 class="h5 mb-3">1. Information We Collect</h2>
-            <p>We collect information that you provide directly to us, including:</p>
-            <ul>
-                <li>Name and contact information</li>
-                <li>Payment information</li>
-                <li>Communication preferences</li>
-                <li>Profile information and photos</li>
-            </ul>
-
-            <h2 class="h5 mb-3 mt-4">2. How We Use Your Information</h2>
-            <p>We use the information we collect to:</p>
-            <ul>
-                <li>Process your bookings and payments</li>
-                <li>Communicate with you about our services</li>
-                <li>Improve our platform and services</li>
-                <li>Ensure platform security</li>
-            </ul>
-
-            <h2 class="h5 mb-3 mt-4">3. Information Sharing</h2>
-            <p>We may share your information with:</p>
-            <ul>
-                <li>Hosts and guests (as necessary for bookings)</li>
-                <li>Service providers and partners</li>
-                <li>Legal authorities when required</li>
-            </ul>
-
-            <h2 class="h5 mb-3 mt-4">4. Data Security</h2>
-            <p>We implement appropriate security measures to protect your information, including:</p>
-            <ul>
-                <li>Encryption of sensitive data</li>
-                <li>Regular security assessments</li>
-                <li>Access controls and monitoring</li>
-                <li>Secure data storage</li>
-            </ul>
-
-            <h2 class="h5 mb-3 mt-4">5. Your Rights</h2>
-            <p>You have the right to:</p>
-            <ul>
-                <li>Access your personal information</li>
-                <li>Correct inaccurate information</li>
-                <li>Request deletion of your information</li>
-                <li>Opt-out of marketing communications</li>
-            </ul>
-
-            <h2 class="h5 mb-3 mt-4">6. Cookies and Tracking</h2>
-            <p>We use cookies and similar technologies to:</p>
-            <ul>
-                <li>Remember your preferences</li>
-                <li>Analyze site usage</li>
-                <li>Personalize content</li>
-                <li>Improve user experience</li>
-            </ul>
-
-            <h2 class="h5 mb-3 mt-4">7. Children's Privacy</h2>
-            <p>Our services are not intended for children under 13. We do not knowingly collect information from children under 13.</p>
-
-            <h2 class="h5 mb-3 mt-4">8. Changes to Privacy Policy</h2>
-            <p>We may update this privacy policy from time to time. We will notify you of any material changes.</p>
-
-            <h2 class="h5 mb-3 mt-4">9. Contact Us</h2>
-            <p>If you have questions about this privacy policy, please contact us at:</p>
-            <p>Email: privacy@staybooking.com<br>
-            Phone: +1 234 567 890</p>
-
-            <div class="mt-4">
-                <p class="mb-0"><strong>Last Updated:</strong> June 2025</p>
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>{% if is_french %}Politique de confidentialité{% else %}Privacy Policy{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <h5>{% if is_french %}1. Collecte des informations{% else %}1. Information Collection{% endif %}</h5>
+                    <p>{% if is_french %}Nous collectons les informations que vous nous fournissez directement, comme lors de l'inscription ou de la création d'un profil.{% else %}We collect information you provide directly to us, such as when you register or create a profile.{% endif %}</p>
+                    
+                    <h5>{% if is_french %}2. Utilisation des informations{% else %}2. Use of Information{% endif %}</h5>
+                    <p>{% if is_french %}Nous utilisons vos informations pour fournir, maintenir et améliorer nos services.{% else %}We use your information to provide, maintain, and improve our services.{% endif %}</p>
+                    
+                    <h5>{% if is_french %}3. Partage des informations{% else %}3. Information Sharing{% endif %}</h5>
+                    <p>{% if is_french %}Nous ne vendons, n'échangeons ni ne louons vos informations personnelles à des tiers.{% else %}We do not sell, trade, or rent your personal information to third parties.{% endif %}</p>
+                    
+                    <h5>{% if is_french %}4. Sécurité{% else %}4. Security{% endif %}</h5>
+                    <p>{% if is_french %}Nous mettons en œuvre des mesures de sécurité appropriées pour protéger vos informations personnelles.{% else %}We implement appropriate security measures to protect your personal information.{% endif %}</p>
+                    
+                    <h5>{% if is_french %}5. Cookies{% else %}5. Cookies{% endif %}</h5>
+                    <p>{% if is_french %}Nous utilisons des cookies pour améliorer votre expérience sur notre site.{% else %}We use cookies to enhance your experience on our website.{% endif %}</p>
+                    
+                    <h5>{% if is_french %}6. Vos droits{% else %}6. Your Rights{% endif %}</h5>
+                    <p>{% if is_french %}Vous avez le droit d'accéder, de modifier ou de supprimer vos informations personnelles.{% else %}You have the right to access, modify, or delete your personal information.{% endif %}</p>
+                    
+                    <div class="text-center mt-4">
+                        <a href="{% url 'home' %}" class="btn btn-primary">
+                            <i class="fas fa-home me-2"></i>{% if is_french %}Retour à l'accueil{% else %}Back to Home{% endif %}
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

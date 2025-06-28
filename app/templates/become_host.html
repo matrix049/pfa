@@ -1,1025 +1,561 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Become a Host - StayBooking</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --primary: #FF385C;
-            --primary-dark: #E31C5F;
-            --secondary: #00A699;
-            --light-gray: #F7F7F7;
-            --dark-gray: #484848;
-            --border-color: #DDDDDD;
-            --shadow: 0 2px 16px rgba(0, 0, 0, 0.12);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #f8f9fa;
-            overflow-x: hidden;
-        }
+{% block title %}{% if is_french %}Devenir Hôte - StayBooking{% else %}Become a Host - StayBooking{% endif %}{% endblock %}
 
-        /* Progress Bar */
-        .progress-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            z-index: 1000;
-            padding: 1rem 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #FF385C;
+        --primary-dark: #E31C5F;
+        --secondary: #00A699;
+        --light-gray: #F7F7F7;
+        --dark-gray: #484848;
+        --border-color: #DDDDDD;
+        --shadow: 0 2px 16px rgba(0, 0, 0, 0.12);
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-        .progress-bar-custom {
-            height: 4px;
-            background: #E5E5E5;
-            border-radius: 2px;
-            overflow: hidden;
-        }
+    /* Progress Bar */
+    .progress-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        z-index: 1000;
+        padding: 1rem 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
 
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            border-radius: 2px;
-            transition: width 0.5s ease;
-            width: 0%;
-        }
+    .progress-bar-custom {
+        height: 4px;
+        background: #E5E5E5;
+        border-radius: 2px;
+        overflow: hidden;
+    }
 
-        .step-indicator {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        border-radius: 2px;
+        transition: width 0.5s ease;
+        width: 0%;
+    }
 
-        .step-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #E5E5E5;
-            transition: var(--transition);
-        }
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
 
-        .step-dot.active {
-            background: var(--primary);
-            transform: scale(1.2);
-        }
+    .step-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #E5E5E5;
+        transition: var(--transition);
+    }
 
-        /* Main Container */
-        .host-container {
-            min-height: 100vh;
-            padding-top: 120px;
-            display: flex;
-            align-items: center;
-        }
+    .step-dot.active {
+        background: var(--primary);
+        transform: scale(1.2);
+    }
 
+    /* Main Container */
+    .host-container {
+        min-height: 100vh;
+        padding-top: 120px;
+        display: flex;
+        align-items: center;
+    }
+
+    .content-card {
+        background: white;
+        border-radius: 24px;
+        padding: 3rem;
+        box-shadow: var(--shadow);
+        max-width: 600px;
+        margin: 0 auto;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .step-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--dark-gray);
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+    }
+
+    .step-subtitle {
+        font-size: 1.1rem;
+        color: #717171;
+        margin-bottom: 2rem;
+        line-height: 1.4;
+    }
+
+    /* Property Type Selection */
+    .property-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+
+    .property-option {
+        background: white;
+        border: 2px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.5rem 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: var(--transition);
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .property-option:hover {
+        border-color: var(--dark-gray);
+        transform: translateY(-2px);
+    }
+
+    .property-option.selected {
+        border-color: var(--primary);
+        background: rgba(255, 56, 92, 0.05);
+    }
+
+    .property-option i {
+        font-size: 1.5rem;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .property-option span {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--dark-gray);
+    }
+
+    /* Space Type Selection */
+    .space-options {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+
+    .space-option {
+        background: white;
+        border: 2px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .space-option:hover {
+        border-color: var(--dark-gray);
+    }
+
+    .space-option.selected {
+        border-color: var(--primary);
+        background: rgba(255, 56, 92, 0.05);
+    }
+
+    .space-title {
+        font-weight: 600;
+        color: var(--dark-gray);
+        margin-bottom: 0.5rem;
+    }
+
+    .space-desc {
+        color: #717171;
+        font-size: 0.95rem;
+    }
+
+    /* Counter Controls */
+    .counter-group {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        border: 2px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+    }
+
+    .counter-label {
+        font-weight: 600;
+        color: var(--dark-gray);
+    }
+
+    .counter-controls {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .counter-btn {
+        width: 40px;
+        height: 40px;
+        border: 2px solid var(--border-color);
+        border-radius: 50%;
+        background: white;
+        color: var(--dark-gray);
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .counter-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    .counter-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .counter-value {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--dark-gray);
+        min-width: 30px;
+        text-align: center;
+    }
+
+    /* Location Input */
+    .location-input {
+        border: 2px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.5rem;
+        font-size: 1.1rem;
+        width: 100%;
+        transition: var(--transition);
+    }
+
+    .location-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.1);
+    }
+
+    /* Buttons */
+    .btn-host {
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    .btn-host:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+
+    .btn-host:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-back {
+        background: transparent;
+        color: var(--dark-gray);
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    .btn-back:hover {
+        border-color: var(--dark-gray);
+        background: var(--light-gray);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .fade-in {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
         .content-card {
-            background: white;
-            border-radius: 24px;
-            padding: 3rem;
-            box-shadow: var(--shadow);
-            max-width: 600px;
-            margin: 0 auto;
-            animation: fadeInUp 0.6s ease-out;
+            margin: 1rem;
+            padding: 2rem;
         }
-
-        .step-title {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--dark-gray);
-            margin-bottom: 0.5rem;
-            line-height: 1.2;
-        }
-
-        .step-subtitle {
-            font-size: 1.1rem;
-            color: #717171;
-            margin-bottom: 2rem;
-            line-height: 1.4;
-        }
-
-        /* Property Type Selection */
-        .property-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-
-        .property-option {
-            background: white;
-            border: 2px solid var(--border-color);
-            border-radius: 16px;
-            padding: 1.5rem 1rem;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-            min-height: 120px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .property-option:hover {
-            border-color: var(--dark-gray);
-            transform: translateY(-2px);
-        }
-
-        .property-option.selected {
-            border-color: var(--primary);
-            background: rgba(255, 56, 92, 0.05);
-        }
-
-        .property-option i {
-            font-size: 1.5rem;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .property-option span {
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--dark-gray);
-        }
-
-        /* Space Type Selection */
-        .space-options {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-
-        .space-option {
-            background: white;
-            border: 2px solid var(--border-color);
-            border-radius: 16px;
-            padding: 1.5rem;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .space-option:hover {
-            border-color: var(--dark-gray);
-        }
-
-        .space-option.selected {
-            border-color: var(--primary);
-            background: rgba(255, 56, 92, 0.05);
-        }
-
-        .space-title {
-            font-weight: 600;
-            color: var(--dark-gray);
-            margin-bottom: 0.5rem;
-        }
-
-        .space-desc {
-            color: #717171;
-            font-size: 0.95rem;
-        }
-
-        /* Counter Controls */
-        .counter-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.5rem 0;
-            border-bottom: 1px solid #EBEBEB;
-        }
-
-        .counter-group:last-child {
-            border-bottom: none;
-        }
-
-        .counter-label {
-            font-weight: 500;
-            color: var(--dark-gray);
-        }
-
-        .counter-controls {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .counter-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 1px solid var(--border-color);
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .counter-btn:hover {
-            border-color: var(--dark-gray);
-        }
-
-        .counter-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .counter-value {
-            font-weight: 500;
-            min-width: 20px;
-            text-align: center;
-        }
-
-        /* Highlights Selection */
-        .highlights-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-
-        .highlight-option {
-            background: white;
-            border: 2px solid var(--border-color);
-            border-radius: 16px;
-            padding: 1.5rem 1rem;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .highlight-option:hover {
-            border-color: var(--dark-gray);
-        }
-
-        .highlight-option.selected {
-            border-color: var(--primary);
-            background: rgba(255, 56, 92, 0.05);
-        }
-
-        /* Form Elements */
-        .form-control-modern {
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1rem 1.25rem;
-            font-size: 1rem;
-            transition: var(--transition);
-            background: white;
-        }
-
-        .form-control-modern:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.1);
-        }
-
-        .form-label-modern {
-            font-weight: 600;
-            color: var(--dark-gray);
-            margin-bottom: 0.75rem;
-        }
-
-        /* Buttons */
-        .btn-primary-modern {
-            background: var(--primary);
-            border: none;
-            border-radius: 12px;
-            padding: 1rem 2rem;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: var(--transition);
-            color: white;
-        }
-
-        .btn-primary-modern:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-            color: white;
-        }
-
-        .btn-secondary-modern {
-            background: transparent;
-            border: 2px solid var(--dark-gray);
-            border-radius: 12px;
-            padding: 1rem 2rem;
-            font-weight: 600;
-            color: var(--dark-gray);
-            transition: var(--transition);
-        }
-
-        .btn-secondary-modern:hover {
-            background: var(--dark-gray);
-            color: white;
-        }
-
-        /* Navigation Buttons */
-        .nav-buttons {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 1px solid #EBEBEB;
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .slide-in {
-            animation: fadeInUp 0.6s ease-out;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .content-card {
-                padding: 2rem 1.5rem;
-                margin: 1rem;
-            }
-
-            .step-title {
-                font-size: 1.5rem;
-            }
-
-            .property-grid {
-                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-                gap: 0.75rem;
-            }
-
-            .highlights-grid {
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            }
-        }
-
-        /* Hidden Steps */
-        .step {
-            display: none;
-        }
-
-        .step.active {
-            display: block;
-        }
-
-        /* Welcome Step Special Styling */
-        .welcome-step {
-            text-align: center;
-            max-width: 500px;
-        }
-
-        .welcome-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 2rem;
-            margin: 0 auto 2rem;
-        }
-    </style>
-</head>
-<body>
-    <!-- Progress Bar -->
-    <div class="progress-container">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="text-muted small">Étape <span id="current-step">1</span> sur 6</span>
-                <button class="btn btn-link text-decoration-none" onclick="window.location.href='{% url 'dashboard' %}'"> 
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="progress-bar-custom">
-                <div class="progress-fill" id="progress-fill"></div>
-            </div>
-            <div class="step-indicator">
-                <div class="step-dot active" data-step="1"></div>
-                <div class="step-dot" data-step="2"></div>
-                <div class="step-dot" data-step="3"></div>
-                <div class="step-dot" data-step="4"></div>
-                <div class="step-dot" data-step="5"></div>
-                <div class="step-dot" data-step="6"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Container -->
-    <div class="host-container">
-        <div class="container">
-            <!-- Step 1: Welcome -->
-            <div class="step active" id="step-1">
-                <div class="content-card welcome-step">
-                    <div class="welcome-icon">
-                        <i class="fas fa-home"></i>
-                    </div>
-                    <h1 class="step-title">Commencer sur StayBooking, c'est facile</h1>
-                    <p class="step-subtitle">Rejoignez notre communauté d'hôtes et commencez à gagner de l'argent en partageant votre espace.</p>
-                    
-                    <div class="text-start mt-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="me-3" style="width: 40px; height: 40px; background: #FF385C; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">1</div>
-                            <div>
-                                <h6 class="mb-1">Parlez-nous de votre logement</h6>
-                                <p class="text-muted small mb-0">Donnez-nous quelques informations de base sur votre propriété</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="me-3" style="width: 40px; height: 40px; background: #FF385C; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">2</div>
-                            <div>
-                                <h6 class="mb-1">Faites en sorte de vous démarquer</h6>
-                                <p class="text-muted small mb-0">Ajoutez des photos, un titre et une description</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <div class="me-3" style="width: 40px; height: 40px; background: #FF385C; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">3</div>
-                            <div>
-                                <h6 class="mb-1">Terminez et publiez</h6>
-                                <p class="text-muted small mb-0">Choisissez un prix et publiez votre annonce</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="nav-buttons">
-                        <div></div>
-                        <button class="btn btn-primary-modern" onclick="nextStep()">
-                            Commencer
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 2: Property Type -->
-            <div class="step" id="step-2">
-                <div class="content-card">
-                    <h1 class="step-title">Parmi les propositions suivantes, laquelle décrit le mieux votre logement ?</h1>
-                    <p class="step-subtitle">Choisissez le type qui correspond le mieux à votre propriété</p>
-                    
-                    <div class="property-grid">
-                        <div class="property-option" data-type="house">
-                            <i class="fas fa-home"></i>
-                            <span>Maison</span>
-                        </div>
-                        <div class="property-option" data-type="apartment">
-                            <i class="fas fa-building"></i>
-                            <span>Appartement</span>
-                        </div>
-                        <div class="property-option" data-type="villa">
-                            <i class="fas fa-mountain"></i>
-                            <span>Villa</span>
-                        </div>
-                        <div class="property-option" data-type="cottage">
-                            <i class="fas fa-tree"></i>
-                            <span>Cottage</span>
-                        </div>
-                        <div class="property-option" data-type="boat">
-                            <i class="fas fa-ship"></i>
-                            <span>Bateau</span>
-                        </div>
-                        <div class="property-option" data-type="cabin">
-                            <i class="fas fa-mountain"></i>
-                            <span>Cabane</span>
-                        </div>
-                        <div class="property-option" data-type="caravan">
-                            <i class="fas fa-caravan"></i>
-                            <span>Caravane</span>
-                        </div>
-                        <div class="property-option" data-type="castle">
-                            <i class="fas fa-chess-rook"></i>
-                            <span>Château</span>
-                        </div>
-                        <div class="property-option" data-type="farm">
-                            <i class="fas fa-tractor"></i>
-                            <span>Ferme</span>
-                        </div>
-                        <div class="property-option" data-type="hotel">
-                            <i class="fas fa-bed"></i>
-                            <span>Hôtel</span>
-                        </div>
-                        <div class="property-option" data-type="riad">
-                            <i class="fas fa-mosque"></i>
-                            <span>Riad</span>
-                        </div>
-                        <div class="property-option" data-type="tent">
-                            <i class="fas fa-campground"></i>
-                            <span>Tente</span>
-                        </div>
-                        <div class="property-option" data-type="tiny">
-                            <i class="fas fa-home"></i>
-                            <span>Tiny house</span>
-                        </div>
-                        <div class="property-option" data-type="tower">
-                            <i class="fas fa-broadcast-tower"></i>
-                            <span>Tour</span>
-                        </div>
-                        <div class="property-option" data-type="treehouse">
-                            <i class="fas fa-tree"></i>
-                            <span>Cabane perchée</span>
-                        </div>
-                        <div class="property-option" data-type="other">
-                            <i class="fas fa-ellipsis-h"></i>
-                            <span>Autre</span>
-                        </div>
-                    </div>
-
-                    <div class="nav-buttons">
-                        <button class="btn btn-secondary-modern" onclick="prevStep()">
-                            <i class="fas fa-arrow-left me-2"></i>Retour
-                        </button>
-                        <button class="btn btn-primary-modern" onclick="nextStep()" id="property-next" disabled>
-                            Suivant<i class="fas fa-arrow-right ms-2"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 3: Space Type -->
-            <div class="step" id="step-3">
-                <div class="content-card">
-                    <h1 class="step-title">Quel type de logement sera à la disposition des voyageurs ?</h1>
-                    <p class="step-subtitle">Choisissez ce qui décrit le mieux l'espace que vous proposez</p>
-                    
-                    <div class="space-options">
-                        <div class="space-option" data-space="entire">
-                            <div class="space-title">Un logement entier</div>
-                            <div class="space-desc">Les voyageurs disposent du logement dans son intégralité.</div>
-                        </div>
-                        <div class="space-option" data-space="room">
-                            <div class="space-title">Une chambre</div>
-                            <div class="space-desc">Les voyageurs ont leur propre chambre dans un logement et ont accès à des espaces partagés.</div>
-                        </div>
-                    </div>
-
-                    <div class="nav-buttons">
-                        <button class="btn btn-secondary-modern" onclick="prevStep()">
-                            <i class="fas fa-arrow-left me-2"></i>Retour
-                        </button>
-                        <button class="btn btn-primary-modern" onclick="nextStep()" id="space-next" disabled>
-                            Suivant<i class="fas fa-arrow-right ms-2"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 4: Property Details -->
-            <div class="step" id="step-4">
-                <div class="content-card">
-                    <h1 class="step-title">Donnez les informations principales concernant votre logement</h1>
-                    <p class="step-subtitle">Vous pourrez ajouter d'autres informations plus tard, comme les types de lit.</p>
-                    
-                    <div class="mt-4">
-                        <div class="counter-group">
-                            <div class="counter-label">Voyageurs</div>
-                            <div class="counter-controls">
-                                <button class="counter-btn" onclick="updateCounter('guests', -1)">
-                                    <i class="fas fa-minus"></i>
-                                </button>
-                                <span class="counter-value" id="guests-count">1</span>
-                                <button class="counter-btn" onclick="updateCounter('guests', 1)">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="counter-group">
-                            <div class="counter-label">Chambres</div>
-                            <div class="counter-controls">
-                                <button class="counter-btn" onclick="updateCounter('bedrooms', -1)">
-                                    <i class="fas fa-minus"></i>
-                                </button>
-                                <span class="counter-value" id="bedrooms-count">1</span>
-                                <button class="counter-btn" onclick="updateCounter('bedrooms', 1)">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="counter-group">
-                            <div class="counter-label">Lits</div>
-                            <div class="counter-controls">
-                                <button class="counter-btn" onclick="updateCounter('beds', -1)">
-                                    <i class="fas fa-minus"></i>
-                                </button>
-                                <span class="counter-value" id="beds-count">1</span>
-                                <button class="counter-btn" onclick="updateCounter('beds', 1)">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="counter-group">
-                            <div class="counter-label">Salles de bain</div>
-                            <div class="counter-controls">
-                                <button class="counter-btn" onclick="updateCounter('bathrooms', -1)">
-                                    <i class="fas fa-minus"></i>
-                                </button>
-                                <span class="counter-value" id="bathrooms-count">1</span>
-                                <button class="counter-btn" onclick="updateCounter('bathrooms', 1)">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="nav-buttons">
-                        <button class="btn btn-secondary-modern" onclick="prevStep()">
-                            <i class="fas fa-arrow-left me-2"></i>Retour
-                        </button>
-                        <button class="btn btn-primary-modern" onclick="nextStep()">
-                            Suivant<i class="fas fa-arrow-right ms-2"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 5: Highlights -->
-            <div class="step" id="step-5">
-                <div class="content-card">
-                    <h1 class="step-title">Choisissez jusqu'à 2 points forts</h1>
-                    <p class="step-subtitle">Ils seront utiles pour commencer votre description.</p>
-                    
-                    <div class="highlights-grid">
-                        <div class="highlight-option" data-highlight="peaceful">
-                            <i class="fas fa-leaf" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
-                            <div>Paisible</div>
-                        </div>
-                        <div class="highlight-option" data-highlight="unique">
-                            <i class="fas fa-star" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
-                            <div>Unique</div>
-                        </div>
-                        <div class="highlight-option" data-highlight="family">
-                            <i class="fas fa-users" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
-                            <div>Adapté aux familles</div>
-                        </div>
-                        <div class="highlight-option" data-highlight="elegant">
-                            <i class="fas fa-gem" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
-                            <div>Élégant</div>
-                        </div>
-                        <div class="highlight-option" data-highlight="central">
-                            <i class="fas fa-map-marker-alt" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
-                            <div>Central</div>
-                        </div>
-                        <div class="highlight-option" data-highlight="spacious">
-                            <i class="fas fa-expand-arrows-alt" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
-                            <div>Spacieux</div>
-                        </div>
-                    </div>
-
-                    <div class="nav-buttons">
-                        <button class="btn btn-secondary-modern" onclick="prevStep()">
-                            <i class="fas fa-arrow-left me-2"></i>Retour
-                        </button>
-                        <button class="btn btn-primary-modern" onclick="nextStep()">
-                            Suivant<i class="fas fa-arrow-right ms-2"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 6: Final Details -->
-            <div class="step" id="step-6">
-                <div class="content-card">
-                    <h1 class="step-title">Dernières informations</h1>
-                    <p class="step-subtitle">Ajoutez quelques détails pour compléter votre annonce</p>
-                    
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="mb-4">
-                            <label class="form-label-modern">Titre de votre annonce</label>
-                            <input type="text" class="form-control-modern" name="title" placeholder="Ex: Appartement cosy au cœur de Rabat" required>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label class="form-label-modern">Description</label>
-                            <textarea class="form-control-modern" name="description" rows="4" placeholder="Décrivez votre logement, les équipements disponibles et ce qui le rend spécial..." required></textarea>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label class="form-label-modern">Adresse complète</label>
-                            <input type="text" class="form-control-modern" name="address" placeholder="Numéro, rue, ville" required>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-4">
-                                <label class="form-label-modern">Prix par nuit (MAD)</label>
-                                <input type="number" class="form-control-modern" name="price" placeholder="500" required>
-                            </div>
-                            <div class="col-md-6 mb-4">
-                                <label class="form-label-modern">Photos (minimum 1)</label>
-                                <input type="file" class="form-control-modern" name="photos" multiple accept="image/*" required>
-                            </div>
-                        </div>
-
-                        <!-- Hidden fields to store step data -->
-                        <input type="hidden" name="property_type" id="selected-property-type">
-                        <input type="hidden" name="space_type" id="selected-space-type">
-                        <input type="hidden" name="guests" id="final-guests">
-                        <input type="hidden" name="bedrooms" id="final-bedrooms">
-                        <input type="hidden" name="beds" id="final-beds">
-                        <input type="hidden" name="bathrooms" id="final-bathrooms">
-                        <input type="hidden" name="highlights" id="selected-highlights">
-
-                        <div class="nav-buttons">
-                            <button type="button" class="btn btn-secondary-modern" onclick="prevStep()">
-                                <i class="fas fa-arrow-left me-2"></i>Retour
-                            </button>
-                            <button type="submit" class="btn btn-primary-modern">
-                                <i class="fas fa-check me-2"></i>Créer l'annonce
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        let currentStep = 1;
-        const totalSteps = 6;
-        let selectedPropertyType = '';
-        let selectedSpaceType = '';
-        let selectedHighlights = [];
         
-        // Counters
-        let counters = {
-            guests: 1,
-            bedrooms: 1,
-            beds: 1,
-            bathrooms: 1
-        };
-
-        // Update progress bar
-        function updateProgress() {
-            const progressPercent = (currentStep / totalSteps) * 100;
-            document.getElementById('progress-fill').style.width = progressPercent + '%';
-            document.getElementById('current-step').textContent = currentStep;
-            
-            // Update step indicators
-            document.querySelectorAll('.step-dot').forEach((dot, index) => {
-                if (index + 1 <= currentStep) {
-                    dot.classList.add('active');
-                } else {
-                    dot.classList.remove('active');
-                }
-            });
+        .step-title {
+            font-size: 1.5rem;
         }
-
-        // Navigate to next step
-        function nextStep() {
-            if (currentStep < totalSteps) {
-                // Hide current step
-                document.getElementById(`step-${currentStep}`).classList.remove('active');
-                
-                // Show next step
-                currentStep++;
-                document.getElementById(`step-${currentStep}`).classList.add('active');
-                document.getElementById(`step-${currentStep}`).classList.add('slide-in');
-                
-                updateProgress();
-                
-                // Scroll to top
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                
-                // Update final form fields if we're on the last step
-                if (currentStep === totalSteps) {
-                    updateFinalForm();
-                }
-            }
+        
+        .property-grid {
+            grid-template-columns: repeat(2, 1fr);
         }
+    }
+</style>
+{% endblock %}
 
-        // Navigate to previous step
-        function prevStep() {
-            if (currentStep > 1) {
-                // Hide current step
-                document.getElementById(`step-${currentStep}`).classList.remove('active');
+{% block content %}
+<!-- Progress Bar -->
+<div class="progress-container">
+    <div class="container">
+        <div class="progress-bar-custom">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="step-indicator">
+            <div class="step-dot active" data-step="1"></div>
+            <div class="step-dot" data-step="2"></div>
+            <div class="step-dot" data-step="3"></div>
+            <div class="step-dot" data-step="4"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="host-container">
+    <div class="container">
+        <div class="content-card fade-in">
+            <!-- Step 1: Welcome -->
+            <div class="step-content" id="step1">
+                <h1 class="step-title">{% if is_french %}Bienvenue sur StayBooking{% else %}Welcome to StayBooking{% endif %}</h1>
+                <p class="step-subtitle">{% if is_french %}Commencez votre voyage pour devenir hôte et partagez votre espace avec des voyageurs du monde entier.{% else %}Start your journey to become a host and share your space with travelers from around the world.{% endif %}</p>
                 
-                // Show previous step
-                currentStep--;
-                document.getElementById(`step-${currentStep}`).classList.add('active');
+                <div class="property-grid">
+                    <div class="property-option" data-type="apartment">
+                        <i class="fas fa-building"></i>
+                        <span>{% if is_french %}Appartement{% else %}Apartment{% endif %}</span>
+                    </div>
+                    <div class="property-option" data-type="house">
+                        <i class="fas fa-home"></i>
+                        <span>{% if is_french %}Maison{% else %}House{% endif %}</span>
+                    </div>
+                    <div class="property-option" data-type="villa">
+                        <i class="fas fa-crown"></i>
+                        <span>{% if is_french %}Villa{% else %}Villa{% endif %}</span>
+                    </div>
+                    <div class="property-option" data-type="cabin">
+                        <i class="fas fa-tree"></i>
+                        <span>{% if is_french %}Cabane{% else %}Cabin{% endif %}</span>
+                    </div>
+                </div>
                 
-                updateProgress();
+                <button class="btn-host" onclick="nextStep()">{% if is_french %}Continuer{% else %}Continue{% endif %}</button>
+            </div>
+
+            <!-- Step 2: Space Type -->
+            <div class="step-content" id="step2" style="display: none;">
+                <h1 class="step-title">{% if is_french %}Quel type d'espace proposez-vous ?{% else %}What type of space are you offering?{% endif %}</h1>
+                <p class="step-subtitle">{% if is_french %}Choisissez l'option qui décrit le mieux votre espace.{% else %}Choose the option that best describes your space.{% endif %}</p>
                 
-                // Scroll to top
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
+                <div class="space-options">
+                    <div class="space-option" data-space="entire">
+                        <div class="space-title">{% if is_french %}Logement entier{% else %}Entire place{% endif %}</div>
+                        <div class="space-desc">{% if is_french %}Les voyageurs ont accès à l'ensemble du logement.{% else %}Travelers have the entire place to themselves.{% endif %}</div>
+                    </div>
+                    <div class="space-option" data-space="room">
+                        <div class="space-title">{% if is_french %}Chambre privée{% else %}Private room{% endif %}</div>
+                        <div class="space-desc">{% if is_french %}Les voyageurs ont leur propre chambre, mais partagent d'autres espaces.{% else %}Travelers have their own room but share other spaces.{% endif %}</div>
+                    </div>
+                </div>
+                
+                <button class="btn-back" onclick="prevStep()">{% if is_french %}Retour{% else %}Back{% endif %}</button>
+                <button class="btn-host" onclick="nextStep()">{% if is_french %}Continuer{% else %}Continue{% endif %}</button>
+            </div>
+
+            <!-- Step 3: Capacity -->
+            <div class="step-content" id="step3" style="display: none;">
+                <h1 class="step-title">{% if is_french %}Combien de voyageurs pouvez-vous accueillir ?{% else %}How many travelers can you accommodate?{% endif %}</h1>
+                <p class="step-subtitle">{% if is_french %}Définissez la capacité de votre espace.{% else %}Set the capacity of your space.{% endif %}</p>
+                
+                <div class="counter-group">
+                    <div class="counter-label">{% if is_french %}Voyageurs{% else %}Travelers{% endif %}</div>
+                    <div class="counter-controls">
+                        <button class="counter-btn" onclick="decrementCounter('travelers')">-</button>
+                        <span class="counter-value" id="travelersCount">2</span>
+                        <button class="counter-btn" onclick="incrementCounter('travelers')">+</button>
+                    </div>
+                </div>
+                
+                <div class="counter-group">
+                    <div class="counter-label">{% if is_french %}Chambres{% else %}Bedrooms{% endif %}</div>
+                    <div class="counter-controls">
+                        <button class="counter-btn" onclick="decrementCounter('bedrooms')">-</button>
+                        <span class="counter-value" id="bedroomsCount">1</span>
+                        <button class="counter-btn" onclick="incrementCounter('bedrooms')">+</button>
+                    </div>
+                </div>
+                
+                <div class="counter-group">
+                    <div class="counter-label">{% if is_french %}Salles de bain{% else %}Bathrooms{% endif %}</div>
+                    <div class="counter-controls">
+                        <button class="counter-btn" onclick="decrementCounter('bathrooms')">-</button>
+                        <span class="counter-value" id="bathroomsCount">1</span>
+                        <button class="counter-btn" onclick="incrementCounter('bathrooms')">+</button>
+                    </div>
+                </div>
+                
+                <button class="btn-back" onclick="prevStep()">{% if is_french %}Retour{% else %}Back{% endif %}</button>
+                <button class="btn-host" onclick="nextStep()">{% if is_french %}Continuer{% else %}Continue{% endif %}</button>
+            </div>
+
+            <!-- Step 4: Location -->
+            <div class="step-content" id="step4" style="display: none;">
+                <h1 class="step-title">{% if is_french %}Où se trouve votre logement ?{% else %}Where is your place located?{% endif %}</h1>
+                <p class="step-subtitle">{% if is_french %}Entrez l'adresse de votre propriété.{% else %}Enter the address of your property.{% endif %}</p>
+                
+                <input type="text" class="location-input" placeholder="{% if is_french %}Entrez l'adresse complète{% else %}Enter full address{% endif %}" id="locationInput">
+                
+                <button class="btn-back" onclick="prevStep()">{% if is_french %}Retour{% else %}Back{% endif %}</button>
+                <button class="btn-host" onclick="submitApplication()">{% if is_french %}Soumettre la demande{% else %}Submit Application{% endif %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentStep = 1;
+const totalSteps = 4;
+
+// Initialize counters
+let travelersCount = 2;
+let bedroomsCount = 1;
+let bathroomsCount = 1;
+
+// Update progress bar
+function updateProgress() {
+    const progress = (currentStep / totalSteps) * 100;
+    document.getElementById('progressFill').style.width = progress + '%';
+    
+    // Update step dots
+    document.querySelectorAll('.step-dot').forEach((dot, index) => {
+        if (index + 1 <= currentStep) {
+            dot.classList.add('active');
+        } else {
+            dot.classList.remove('active');
         }
+    });
+}
 
-        // Property type selection
-        document.querySelectorAll('.property-option').forEach(option => {
-            option.addEventListener('click', function() {
-                // Remove previous selection
-                document.querySelectorAll('.property-option').forEach(opt => {
-                    opt.classList.remove('selected');
-                });
-                
-                // Add selection to clicked option
-                this.classList.add('selected');
-                selectedPropertyType = this.dataset.type;
-                
-                // Enable next button
-                document.getElementById('property-next').disabled = false;
-            });
-        });
+// Navigation functions
+function nextStep() {
+    if (currentStep < totalSteps) {
+        document.getElementById('step' + currentStep).style.display = 'none';
+        currentStep++;
+        document.getElementById('step' + currentStep).style.display = 'block';
+        updateProgress();
+    }
+}
 
-        // Space type selection
-        document.querySelectorAll('.space-option').forEach(option => {
-            option.addEventListener('click', function() {
-                // Remove previous selection
-                document.querySelectorAll('.space-option').forEach(opt => {
-                    opt.classList.remove('selected');
-                });
-                
-                // Add selection to clicked option
-                this.classList.add('selected');
-                selectedSpaceType = this.dataset.space;
-                
-                // Enable next button
-                document.getElementById('space-next').disabled = false;
-            });
-        });
+function prevStep() {
+    if (currentStep > 1) {
+        document.getElementById('step' + currentStep).style.display = 'none';
+        currentStep--;
+        document.getElementById('step' + currentStep).style.display = 'block';
+        updateProgress();
+    }
+}
 
-        // Counter functions
-        function updateCounter(type, change) {
-            const newValue = Math.max(0, counters[type] + change);
-            
-            // Special rules
-            if (type === 'guests' && newValue < 1) return;
-            if (type === 'bedrooms' && newValue < 1) return;
-            if (type === 'beds' && newValue < 1) return;
-            if (type === 'bathrooms' && newValue < 0.5) return;
-            
-            counters[type] = newValue;
-            document.getElementById(`${type}-count`).textContent = newValue;
-            
-            // Update counter buttons state
-            updateCounterButtons();
-        }
+// Counter functions
+function incrementCounter(type) {
+    switch(type) {
+        case 'travelers':
+            if (travelersCount < 16) travelersCount++;
+            document.getElementById('travelersCount').textContent = travelersCount;
+            break;
+        case 'bedrooms':
+            if (bedroomsCount < 8) bedroomsCount++;
+            document.getElementById('bedroomsCount').textContent = bedroomsCount;
+            break;
+        case 'bathrooms':
+            if (bathroomsCount < 8) bathroomsCount++;
+            document.getElementById('bathroomsCount').textContent = bathroomsCount;
+            break;
+    }
+}
 
-        function updateCounterButtons() {
-            Object.keys(counters).forEach(type => {
-                const minusBtn = document.querySelector(`[onclick="updateCounter('${type}', -1)"]`);
-                const value = counters[type];
-                
-                // Disable minus button if at minimum
-                if ((type === 'guests' || type === 'bedrooms' || type === 'beds') && value <= 1) {
-                    minusBtn.disabled = true;
-                } else if (type === 'bathrooms' && value <= 0) {
-                    minusBtn.disabled = true;
-                } else {
-                    minusBtn.disabled = false;
-                }
-            });
-        }
+function decrementCounter(type) {
+    switch(type) {
+        case 'travelers':
+            if (travelersCount > 1) travelersCount--;
+            document.getElementById('travelersCount').textContent = travelersCount;
+            break;
+        case 'bedrooms':
+            if (bedroomsCount > 1) bedroomsCount--;
+            document.getElementById('bedroomsCount').textContent = bedroomsCount;
+            break;
+        case 'bathrooms':
+            if (bathroomsCount > 1) bathroomsCount--;
+            document.getElementById('bathroomsCount').textContent = bathroomsCount;
+            break;
+    }
+}
 
-        // Highlights selection
-        document.querySelectorAll('.highlight-option').forEach(option => {
-            option.addEventListener('click', function() {
-                const highlight = this.dataset.highlight;
-                
-                if (this.classList.contains('selected')) {
-                    // Deselect
-                    this.classList.remove('selected');
-                    selectedHighlights = selectedHighlights.filter(h => h !== highlight);
-                } else {
-                    // Select (max 2)
-                    if (selectedHighlights.length < 2) {
-                        this.classList.add('selected');
-                        selectedHighlights.push(highlight);
-                    } else {
-                        // Replace oldest selection
-                        const oldestHighlight = selectedHighlights.shift();
-                        document.querySelector(`[data-highlight="${oldestHighlight}"]`).classList.remove('selected');
-                        
-                        this.classList.add('selected');
-                        selectedHighlights.push(highlight);
-                    }
-                }
-            });
-        });
+// Property type selection
+document.querySelectorAll('.property-option').forEach(option => {
+    option.addEventListener('click', function() {
+        document.querySelectorAll('.property-option').forEach(opt => opt.classList.remove('selected'));
+        this.classList.add('selected');
+    });
+});
 
-        // Update final form with all selections
-        function updateFinalForm() {
-            document.getElementById('selected-property-type').value = selectedPropertyType;
-            document.getElementById('selected-space-type').value = selectedSpaceType;
-            document.getElementById('final-guests').value = counters.guests;
-            document.getElementById('final-bedrooms').value = counters.bedrooms;
-            document.getElementById('final-beds').value = counters.beds;
-            document.getElementById('final-bathrooms').value = counters.bathrooms;
-            document.getElementById('selected-highlights').value = selectedHighlights.join(',');
-        }
+// Space type selection
+document.querySelectorAll('.space-option').forEach(option => {
+    option.addEventListener('click', function() {
+        document.querySelectorAll('.space-option').forEach(opt => opt.classList.remove('selected'));
+        this.classList.add('selected');
+    });
+});
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            updateProgress();
-            updateCounterButtons();
-        });
+// Submit application
+function submitApplication() {
+    const location = document.getElementById('locationInput').value;
+    if (!location.trim()) {
+        alert('{% if is_french %}Veuillez entrer l\'adresse de votre propriété.{% else %}Please enter your property address.{% endif %}');
+        return;
+    }
+    
+    // Here you would typically send the data to your backend
+    // For now, we'll just show a success message
+    alert('{% if is_french %}Demande soumise avec succès ! Nous vous contacterons bientôt.{% else %}Application submitted successfully! We\'ll contact you soon.{% endif %}');
+}
 
-        // Form validation before submission
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const title = document.querySelector('input[name="title"]').value;
-            const description = document.querySelector('textarea[name="description"]').value;
-            const address = document.querySelector('input[name="address"]').value;
-            const price = document.querySelector('input[name="price"]').value;
-            const photos = document.querySelector('input[name="photos"]').files;
-
-            if (!title || !description || !address || !price || photos.length === 0) {
-                e.preventDefault();
-                alert('Veuillez remplir tous les champs obligatoires');
-                return;
-            }
-
-            if (!selectedPropertyType || !selectedSpaceType) {
-                e.preventDefault();
-                alert('Veuillez compléter toutes les étapes précédentes');
-                return;
-            }
-
-            // Show loading state
-            const submitBtn = this.querySelector('button[type="submit"]');
-            submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>Création en cours...';
-            submitBtn.disabled = true;
-        });
-
-        // Keyboard navigation
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowRight' || e.key === 'Enter') {
-                const nextBtn = document.querySelector(`#step-${currentStep} .btn-primary-modern`);
-                if (nextBtn && !nextBtn.disabled) {
-                    nextBtn.click();
-                }
-            } else if (e.key === 'ArrowLeft') {
-                if (currentStep > 1) {
-                    prevStep();
-                }
-            }
-        });
-
-        // Auto-save progress to localStorage
-        function saveProgress() {
-            const progress = {
-                currentStep,
-                selectedPropertyType,
-                selectedSpaceType,
-                counters,
-                selectedHighlights
-            };
-            localStorage.setItem('hostingProgress', JSON.stringify(progress));
-        }
-
-        // Load saved progress
-        function loadProgress() {
-            const saved = localStorage.getItem('hostingProgress');
-            if (saved) {
-                const progress = JSON.parse(saved);
-                // Restore state if needed
-                console.log('Previous progress found:', progress);
-            }
-        }
-
-        // Save progress on each step
-        function nextStep() {
-            if (currentStep < totalSteps) {
-                saveProgress();
-                
-                // Hide current step
-                document.getElementById(`step-${currentStep}`).classList.remove('active');
-                
-                // Show next step
-                currentStep++;
-                document.getElementById(`step-${currentStep}`).classList.add('active');
-                document.getElementById(`step-${currentStep}`).classList.add('slide-in');
-                
-                updateProgress();
-                
-                // Scroll to top
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                
-                // Update final form fields if we're on the last step
-                if (currentStep === totalSteps) {
-                    updateFinalForm();
-                }
-            }
-        }
-
-        // Initialize app
-        loadProgress();
-    </script>
-</body>
-</html>
+// Initialize
+updateProgress();
+</script>
+{% endblock %}

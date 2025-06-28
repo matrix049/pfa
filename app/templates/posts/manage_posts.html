@@ -1,133 +1,76 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}{% if is_french %}Gérer les articles - StayBooking{% else %}Manage Posts - StayBooking{% endif %}{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="mb-0">Manage Posts</h3>
-                    <div class="btn-group">
-                        <button class="btn btn-outline-secondary" data-filter="all">All</button>
-                        <button class="btn btn-outline-warning" data-filter="pending">Pending</button>
-                        <button class="btn btn-outline-success" data-filter="approved">Approved</button>
-                        <button class="btn btn-outline-danger" data-filter="declined">Declined</button>
-                    </div>
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-tasks me-2"></i>{% if is_french %}Gérer les articles{% else %}Manage Posts{% endif %}
+                    </h4>
+                    <a href="{% url 'create_post' %}" class="btn btn-light btn-sm">
+                        <i class="fas fa-plus me-2"></i>{% if is_french %}Nouvel article{% else %}New Post{% endif %}
+                    </a>
                 </div>
                 <div class="card-body">
+                    {% if posts %}
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>Title</th>
-                                    <th>Property</th>
-                                    <th>Host</th>
-                                    <th>Created</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
+                                    <th>{% if is_french %}Titre{% else %}Title{% endif %}</th>
+                                    <th>{% if is_french %}Auteur{% else %}Author{% endif %}</th>
+                                    <th>{% if is_french %}Propriété{% else %}Property{% endif %}</th>
+                                    <th>{% if is_french %}Statut{% else %}Status{% endif %}</th>
+                                    <th>{% if is_french %}Créé le{% else %}Created{% endif %}</th>
+                                    <th>{% if is_french %}Actions{% else %}Actions{% endif %}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for post in posts %}
-                                <tr class="post-row" data-status="{{ post.status }}">
+                                <tr>
                                     <td>{{ post.title }}</td>
+                                    <td>{{ post.author.get_full_name|default:post.author.username }}</td>
                                     <td>{{ post.property.title }}</td>
-                                    <td>{{ post.host.username }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ post.get_status_color }}">{{ post.get_status_display }}</span>
+                                    </td>
                                     <td>{{ post.created_at|date:"M d, Y" }}</td>
                                     <td>
-                                        <span class="badge {% if post.status == 'pending' %}bg-warning{% elif post.status == 'approved' %}bg-success{% else %}bg-danger{% endif %}">
-                                            {{ post.status|title }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group">
-                                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#viewPost{{ post.id }}">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="#" class="btn btn-outline-primary">
                                                 <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-outline-warning">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button class="btn btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
                                             </button>
-                                            {% if post.status == 'pending' %}
-                                            <form method="post" action="{% url 'approve_post' post.id %}" class="d-inline">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-sm btn-success">
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                            </form>
-                                            <form method="post" action="{% url 'decline_post' post.id %}" class="d-inline">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-sm btn-danger">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </form>
-                                            {% endif %}
                                         </div>
                                     </td>
                                 </tr>
-
-                                <!-- View Post Modal -->
-                                <div class="modal fade" id="viewPost{{ post.id }}" tabindex="-1">
-                                    <div class="modal-dialog modal-lg">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">{{ post.title }}</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <h6>Property: {{ post.property.title }}</h6>
-                                                <p class="text-muted">Posted by {{ post.host.username }} on {{ post.created_at|date:"M d, Y" }}</p>
-                                                <hr>
-                                                <div class="post-content">
-                                                    {{ post.content|linebreaks }}
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                {% if post.status == 'pending' %}
-                                                <form method="post" action="{% url 'approve_post' post.id %}" class="d-inline">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="btn btn-success">Approve</button>
-                                                </form>
-                                                <form method="post" action="{% url 'decline_post' post.id %}" class="d-inline">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="btn btn-danger">Decline</button>
-                                                </form>
-                                                {% endif %}
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">{% if is_french %}Aucun article trouvé{% else %}No posts found{% endif %}</h5>
+                        <p class="text-muted">{% if is_french %}Commencez par créer votre premier article.{% else %}Start by creating your first post.{% endif %}</p>
+                        <a href="{% url 'create_post' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>{% if is_french %}Créer un article{% else %}Create Post{% endif %}
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const filterButtons = document.querySelectorAll('[data-filter]');
-    const postRows = document.querySelectorAll('.post-row');
-
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const filter = this.dataset.filter;
-            
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-
-            postRows.forEach(row => {
-                if (filter === 'all' || row.dataset.status === filter) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        });
-    });
-});
-</script>
-{% endblock %}
 {% endblock %} 

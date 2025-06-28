@@ -4,6 +4,8 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.utils import timezone
 from django.db import transaction
+from django.utils.translation import activate, gettext as _
+from django.conf import settings
 from .models import Property, PropertyImage, Booking, Review, UserProfile, HostApplication, Post, Wishlist
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
@@ -15,7 +17,6 @@ from .forms import HostApplicationForm
 from django.core.paginator import Paginator
 from django.db.models import Q
 import stripe
-from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
@@ -647,3 +648,27 @@ def remove_from_wishlist(request, property_id):
     
     # Redirect back to the previous page or dashboard
     return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+
+@login_required
+def change_language(request, language_code):
+    """Change user's language preference"""
+    if language_code in ['en', 'fr']:
+        # Update user's language preference in profile
+        try:
+            profile = request.user.userprofile
+            profile.language = language_code
+            profile.save()
+        except UserProfile.DoesNotExist:
+            # Create profile if it doesn't exist
+            UserProfile.objects.create(user=request.user, language=language_code)
+        
+        # Store language preference in session
+        request.session['user_language'] = language_code
+        
+        messages.success(request, 'Language changed successfully!' if language_code == 'en' else 'Langue changée avec succès!')
+    else:
+        messages.error(request, 'Invalid language selection.' if request.session.get('user_language', 'en') == 'en' else 'Sélection de langue invalide.')
+    
+    # Redirect back to the previous page or dashboard
+    next_url = request.GET.get('next', 'dashboard')
+    return redirect(next_url)

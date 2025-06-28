@@ -1,68 +1,40 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Terms of Service - StayBooking{% endblock %}
+{% block title %}{% if is_french %}Conditions d'utilisation - StayBooking{% else %}Terms of Service - StayBooking{% endif %}{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <h1 class="mb-4">Terms of Service</h1>
-    
-    <div class="card">
-        <div class="card-body">
-            <h2 class="h5 mb-3">1. Acceptance of Terms</h2>
-            <p>By accessing and using StayBooking, you accept and agree to be bound by the terms and provision of this agreement.</p>
-
-            <h2 class="h5 mb-3 mt-4">2. User Registration</h2>
-            <p>To use certain features of the site, you must register for an account. You agree to provide accurate information and keep it updated.</p>
-
-            <h2 class="h5 mb-3 mt-4">3. Booking and Payments</h2>
-            <ul>
-                <li>All bookings are subject to availability</li>
-                <li>Prices are in USD unless otherwise stated</li>
-                <li>Payment processing is handled securely</li>
-                <li>Cancellation policies vary by property</li>
-            </ul>
-
-            <h2 class="h5 mb-3 mt-4">4. Host Responsibilities</h2>
-            <p>Hosts are responsible for:</p>
-            <ul>
-                <li>Providing accurate property descriptions</li>
-                <li>Maintaining clean and safe accommodations</li>
-                <li>Responding to booking requests promptly</li>
-                <li>Following local regulations and laws</li>
-            </ul>
-
-            <h2 class="h5 mb-3 mt-4">5. Guest Responsibilities</h2>
-            <p>Guests must:</p>
-            <ul>
-                <li>Follow house rules</li>
-                <li>Respect the property and neighbors</li>
-                <li>Report any issues promptly</li>
-                <li>Not engage in illegal activities</li>
-            </ul>
-
-            <h2 class="h5 mb-3 mt-4">6. Prohibited Activities</h2>
-            <p>Users may not:</p>
-            <ul>
-                <li>Violate any laws or regulations</li>
-                <li>Harass other users</li>
-                <li>Post false or misleading information</li>
-                <li>Attempt to gain unauthorized access</li>
-            </ul>
-
-            <h2 class="h5 mb-3 mt-4">7. Limitation of Liability</h2>
-            <p>StayBooking is not liable for:</p>
-            <ul>
-                <li>Actions of hosts or guests</li>
-                <li>Property damage or personal injury</li>
-                <li>Loss of data or business interruption</li>
-                <li>Technical issues or service interruptions</li>
-            </ul>
-
-            <h2 class="h5 mb-3 mt-4">8. Changes to Terms</h2>
-            <p>We reserve the right to modify these terms at any time. Users will be notified of significant changes.</p>
-
-            <div class="mt-4">
-                <p class="mb-0"><strong>Last Updated:</strong> June 2025</p>
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-file-contract me-2"></i>{% if is_french %}Conditions d'utilisation{% else %}Terms of Service{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <h5>{% if is_french %}1. Acceptation des conditions{% else %}1. Acceptance of Terms{% endif %}</h5>
+                    <p>{% if is_french %}En utilisant StayBooking, vous acceptez d'être lié par ces conditions d'utilisation.{% else %}By using StayBooking, you agree to be bound by these terms of service.{% endif %}</p>
+                    
+                    <h5>{% if is_french %}2. Utilisation du service{% else %}2. Use of Service{% endif %}</h5>
+                    <p>{% if is_french %}Vous vous engagez à utiliser le service de manière légale et éthique.{% else %}You agree to use the service in a legal and ethical manner.{% endif %}</p>
+                    
+                    <h5>{% if is_french %}3. Réservations et paiements{% else %}3. Bookings and Payments{% endif %}</h5>
+                    <p>{% if is_french %}Toutes les réservations sont soumises à nos politiques de réservation et de paiement.{% else %}All bookings are subject to our booking and payment policies.{% endif %}</p>
+                    
+                    <h5>{% if is_french %}4. Responsabilité{% else %}4. Liability{% endif %}</h5>
+                    <p>{% if is_french %}StayBooking n'est pas responsable des dommages causés par l'utilisation du service.{% else %}StayBooking is not liable for damages caused by the use of the service.{% endif %}</p>
+                    
+                    <h5>{% if is_french %}5. Modifications{% else %}5. Modifications{% endif %}</h5>
+                    <p>{% if is_french %}Nous nous réservons le droit de modifier ces conditions à tout moment.{% else %}We reserve the right to modify these terms at any time.{% endif %}</p>
+                    
+                    <div class="text-center mt-4">
+                        <a href="{% url 'home' %}" class="btn btn-primary">
+                            <i class="fas fa-home me-2"></i>{% if is_french %}Retour à l'accueil{% else %}Back to Home{% endif %}
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

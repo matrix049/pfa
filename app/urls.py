@@ -39,4 +39,5 @@ urlpatterns = [
     path('booking/success/', views.booking_success, name='booking_success'),
     path('wishlist/add/<int:property_id>/', views.add_to_wishlist, name='add_to_wishlist'),
     path('wishlist/remove/<int:property_id>/', views.remove_from_wishlist, name='remove_from_wishlist'),
+    path('change-language/<str:language_code>/', views.change_language, name='change_language'),
 ]

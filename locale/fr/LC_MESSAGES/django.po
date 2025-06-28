@@ -1,0 +1,337 @@
+# French translations for StayBooking project.
+# Copyright (C) 2024 ORGANIZATION
+# This file is distributed under the same license as the StayBooking project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: StayBooking 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-01 12:00+0000\n"
+"PO-Revision-Date: 2024-01-01 12:00+0000\n"
+"Last-Translator: \n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: app/templates/home.html:15
+msgid "Find Your Perfect Stay"
+msgstr "Trouvez Votre Séjour Parfait"
+
+#: app/templates/home.html:16
+msgid "Discover unique homes and experiences around the world"
+msgstr "Découvrez des logements et expériences uniques dans le monde entier"
+
+#: app/templates/home.html:25
+msgid "WHERE"
+msgstr "OÙ"
+
+#: app/templates/home.html:26
+msgid "Search destinations"
+msgstr "Rechercher des destinations"
+
+#: app/templates/home.html:29
+msgid "CHECK IN"
+msgstr "ARRIVÉE"
+
+#: app/templates/home.html:32
+msgid "CHECK OUT"
+msgstr "DÉPART"
+
+#: app/templates/home.html:35
+msgid "GUESTS"
+msgstr "VOYAGEURS"
+
+#: app/templates/home.html:42
+msgid "Search Properties"
+msgstr "Rechercher des Propriétés"
+
+#: app/templates/home.html:50
+msgid "Featured Properties"
+msgstr "Propriétés en Vedette"
+
+#: app/templates/home.html:51
+msgid "Handpicked properties that offer the best experience"
+msgstr "Propriétés sélectionnées qui offrent la meilleure expérience"
+
+#: app/templates/home.html:75
+msgid "View Details"
+msgstr "Voir les Détails"
+
+#: app/templates/home.html:85
+msgid "Why Choose StayBooking"
+msgstr "Pourquoi Choisir StayBooking"
+
+#: app/templates/home.html:86
+msgid "We provide the best experience for both guests and hosts"
+msgstr "Nous offrons la meilleure expérience pour les voyageurs et les hôtes"
+
+#: app/templates/home.html:95
+msgid "Secure Booking"
+msgstr "Réservation Sécurisée"
+
+#: app/templates/home.html:96
+msgid "Your safety and security is our top priority. All payments are protected and secure."
+msgstr "Votre sécurité est notre priorité absolue. Tous les paiements sont protégés et sécurisés."
+
+#: app/templates/home.html:103
+msgid "Best Price Guarantee"
+msgstr "Garantie du Meilleur Prix"
+
+#: app/templates/home.html:104
+msgid "Find the best deals for your stay. We guarantee competitive prices on all properties."
+msgstr "Trouvez les meilleures offres pour votre séjour. Nous garantissons des prix compétitifs sur toutes les propriétés."
+
+#: app/templates/home.html:111
+msgid "24/7 Support"
+msgstr "Support 24/7"
+
+#: app/templates/home.html:112
+msgid "We're here to help anytime you need us. Get support whenever, wherever."
+msgstr "Nous sommes là pour vous aider à tout moment. Obtenez du support quand vous voulez, où vous voulez."
+
+#: app/templates/dashboard.html:15
+msgid "Welcome back"
+msgstr "Bon retour"
+
+#: app/templates/dashboard.html:16
+msgid "Manage your bookings, properties, and account settings"
+msgstr "Gérez vos réservations, propriétés et paramètres de compte"
+
+#: app/templates/dashboard.html:25
+msgid "Bookings"
+msgstr "Réservations"
+
+#: app/templates/dashboard.html:30
+msgid "Reviews"
+msgstr "Avis"
+
+#: app/templates/dashboard.html:35
+msgid "Properties"
+msgstr "Propriétés"
+
+#: app/templates/dashboard.html:40
+msgid "Role"
+msgstr "Rôle"
+
+#: app/templates/dashboard.html:55
+msgid "My Bookings"
+msgstr "Mes Réservations"
+
+#: app/templates/dashboard.html:60
+msgid "My Wishlist"
+msgstr "Ma Liste de Souhaits"
+
+#: app/templates/dashboard.html:65
+msgid "My Reviews"
+msgstr "Mes Avis"
+
+#: app/templates/dashboard.html:70
+msgid "My Properties"
+msgstr "Mes Propriétés"
+
+#: app/templates/dashboard.html:75
+msgid "Manage Users"
+msgstr "Gérer les Utilisateurs"
+
+#: app/templates/dashboard.html:80
+msgid "Host Applications"
+msgstr "Candidatures d'Hôtes"
+
+#: app/templates/dashboard.html:85
+msgid "Edit Profile"
+msgstr "Modifier le Profil"
+
+#: app/templates/dashboard.html:95
+msgid "Quick Actions"
+msgstr "Actions Rapides"
+
+#: app/templates/dashboard.html:100
+msgid "Become a Host"
+msgstr "Devenir Hôte"
+
+#: app/templates/dashboard.html:101
+msgid "Share your space and earn money"
+msgstr "Partagez votre espace et gagnez de l'argent"
+
+#: app/templates/dashboard.html:102
+msgid "Start Now"
+msgstr "Commencer Maintenant"
+
+#: app/templates/dashboard.html:110
+msgid "Application Status"
+msgstr "Statut de la Candidature"
+
+#: app/templates/dashboard.html:111
+msgid "Status"
+msgstr "Statut"
+
+#: app/templates/dashboard.html:112
+msgid "Pending Review"
+msgstr "En Attente de Révision"
+
+#: app/templates/dashboard.html:113
+msgid "Submitted"
+msgstr "Soumis"
+
+#: app/templates/dashboard.html:114
+msgid "We'll notify you once reviewed."
+msgstr "Nous vous notifierons une fois révisé."
+
+#: app/templates/dashboard.html:120
+msgid "Host Actions"
+msgstr "Actions d'Hôte"
+
+#: app/templates/dashboard.html:125
+msgid "Add Property"
+msgstr "Ajouter une Propriété"
+
+#: app/templates/dashboard.html:126
+msgid "Create Listing"
+msgstr "Créer une Annonce"
+
+#: app/templates/dashboard.html:140
+msgid "You don't have any bookings yet."
+msgstr "Vous n'avez pas encore de réservations."
+
+#: app/templates/dashboard.html:145
+msgid "Browse Properties"
+msgstr "Parcourir les Propriétés"
+
+#: app/templates/dashboard.html:160
+msgid "Your wishlist is empty."
+msgstr "Votre liste de souhaits est vide."
+
+#: app/templates/dashboard.html:170
+msgid "You haven't written any reviews yet."
+msgstr "Vous n'avez pas encore écrit d'avis."
+
+#: app/templates/dashboard.html:185
+msgid "Add New Property"
+msgstr "Ajouter une Nouvelle Propriété"
+
+#: app/templates/dashboard.html:200
+msgid "You haven't listed any properties yet."
+msgstr "Vous n'avez pas encore listé de propriétés."
+
+#: app/templates/dashboard.html:205
+msgid "Create Your First Listing"
+msgstr "Créer Votre Première Annonce"
+
+#: app/templates/dashboard.html:220
+msgid "Pending Host Applications"
+msgstr "Candidatures d'Hôtes en Attente"
+
+#: app/templates/dashboard.html:235
+msgid "No pending host applications."
+msgstr "Aucune candidature d'hôte en attente."
+
+#: app/templates/edit_profile.html:15
+msgid "Edit Profile"
+msgstr "Modifier le Profil"
+
+#: app/templates/edit_profile.html:16
+msgid "Manage your account settings and preferences"
+msgstr "Gérez vos paramètres de compte et préférences"
+
+#: app/templates/edit_profile.html:50
+msgid "Personal Information"
+msgstr "Informations Personnelles"
+
+#: app/templates/edit_profile.html:55
+msgid "First Name"
+msgstr "Prénom"
+
+#: app/templates/edit_profile.html:60
+msgid "Last Name"
+msgstr "Nom de Famille"
+
+#: app/templates/edit_profile.html:65
+msgid "Email Address"
+msgstr "Adresse E-mail"
+
+#: app/templates/edit_profile.html:70
+msgid "Phone Number"
+msgstr "Numéro de Téléphone"
+
+#: app/templates/edit_profile.html:75
+msgid "Date of Birth"
+msgstr "Date de Naissance"
+
+#: app/templates/edit_profile.html:80
+msgid "Bio"
+msgstr "Biographie"
+
+#: app/templates/edit_profile.html:90
+msgid "Location"
+msgstr "Localisation"
+
+#: app/templates/edit_profile.html:95
+msgid "Address"
+msgstr "Adresse"
+
+#: app/templates/edit_profile.html:100
+msgid "City"
+msgstr "Ville"
+
+#: app/templates/edit_profile.html:105
+msgid "Country"
+msgstr "Pays"
+
+#: app/templates/edit_profile.html:115
+msgid "Preferences"
+msgstr "Préférences"
+
+#: app/templates/edit_profile.html:120
+msgid "Language"
+msgstr "Langue"
+
+#: app/templates/edit_profile.html:130
+msgid "Currency"
+msgstr "Devise"
+
+#: app/templates/edit_profile.html:140
+msgid "Notifications"
+msgstr "Notifications"
+
+#: app/templates/edit_profile.html:145
+msgid "Email Notifications"
+msgstr "Notifications par E-mail"
+
+#: app/templates/edit_profile.html:146
+msgid "Receive important updates via email"
+msgstr "Recevez des mises à jour importantes par e-mail"
+
+#: app/templates/edit_profile.html:150
+msgid "SMS Notifications"
+msgstr "Notifications par SMS"
+
+#: app/templates/edit_profile.html:151
+msgid "Receive booking alerts via SMS"
+msgstr "Recevez des alertes de réservation par SMS"
+
+#: app/templates/edit_profile.html:155
+msgid "Marketing Emails"
+msgstr "E-mails Marketing"
+
+#: app/templates/edit_profile.html:156
+msgid "Receive special offers and promotions"
+msgstr "Recevez des offres spéciales et promotions"
+
+#: app/templates/edit_profile.html:165
+msgid "Save Changes"
+msgstr "Enregistrer les Modifications"
+
+#: app/templates/edit_profile.html:170
+msgid "Cancel"
+msgstr "Annuler"
+
+#: app/views.py:650
+msgid "Language changed successfully!"
+msgstr "Langue changée avec succès!"
+
+#: app/views.py:652
+msgid "Invalid language selection."
+msgstr "Sélection de langue invalide." 

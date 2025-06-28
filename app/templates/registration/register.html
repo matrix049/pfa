@@ -1,121 +1,74 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Register - StayBooking{% endblock %}
+{% block title %}{% if is_french %}S'inscrire - StayBooking{% else %}Register - StayBooking{% endif %}{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container mt-5 pt-5">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <div class="card shadow-sm">
-                <div class="card-body p-5">
-                    <h2 class="text-center mb-4">Create an Account</h2>
-                    
-                    {% if form.errors %}
-                    <div class="alert alert-danger">
-                        Please correct the errors below.
-                    </div>
-                    {% endif %}
-
-                    <form method="post" enctype="multipart/form-data">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>{% if is_french %}Créer un compte{% else %}Create Account{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
                         {% csrf_token %}
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="id_first_name" class="form-label">First Name</label>
-                                <input type="text" name="first_name" id="id_first_name" class="form-control" required>
-                                {% if form.first_name.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.first_name.errors|join:", " }}
-                                </div>
-                                {% endif %}
+                                <label for="first_name" class="form-label">{% if is_french %}Prénom{% else %}First Name{% endif %}</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" required>
                             </div>
-
                             <div class="col-md-6 mb-3">
-                                <label for="id_last_name" class="form-label">Last Name</label>
-                                <input type="text" name="last_name" id="id_last_name" class="form-control" required>
-                                {% if form.last_name.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.last_name.errors|join:", " }}
-                                </div>
-                                {% endif %}
+                                <label for="last_name" class="form-label">{% if is_french %}Nom{% else %}Last Name{% endif %}</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" required>
                             </div>
                         </div>
-
+                        
                         <div class="mb-3">
-                            <label for="id_email" class="form-label">Email Address</label>
-                            <input type="email" name="email" id="id_email" class="form-control" required>
-                            {% if form.email.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.email.errors|join:", " }}
-                            </div>
-                            {% endif %}
+                            <label for="username" class="form-label">{% if is_french %}Nom d'utilisateur{% else %}Username{% endif %}</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
                         </div>
-
+                        
                         <div class="mb-3">
-                            <label for="id_username" class="form-label">Username</label>
-                            <input type="text" name="username" id="id_username" class="form-control" required>
-                            {% if form.username.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.username.errors|join:", " }}
-                            </div>
-                            {% endif %}
+                            <label for="email" class="form-label">{% if is_french %}Email{% else %}Email{% endif %}</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
                         </div>
-
+                        
                         <div class="mb-3">
-                            <label for="id_password1" class="form-label">Password</label>
-                            <input type="password" name="password1" id="id_password1" class="form-control" required>
-                            {% if form.password1.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.password1.errors|join:", " }}
-                            </div>
-                            {% endif %}
-                            <div class="form-text">
-                                Your password must contain at least 8 characters.
-                            </div>
+                            <label for="password1" class="form-label">{% if is_french %}Mot de passe{% else %}Password{% endif %}</label>
+                            <input type="password" class="form-control" id="password1" name="password1" required>
                         </div>
-
-                        <div class="mb-4">
-                            <label for="id_password2" class="form-label">Confirm Password</label>
-                            <input type="password" name="password2" id="id_password2" class="form-control" required>
-                            {% if form.password2.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.password2.errors|join:", " }}
-                            </div>
-                            {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="password2" class="form-label">{% if is_french %}Confirmer le mot de passe{% else %}Confirm Password{% endif %}</label>
+                            <input type="password" class="form-control" id="password2" name="password2" required>
                         </div>
-
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" name="terms" id="id_terms" class="form-check-input" required>
-                            <label class="form-check-label" for="id_terms">
-                                I agree to the <a href="{% url 'terms' %}" target="_blank">Terms of Service</a> and <a href="{% url 'privacy' %}" target="_blank">Privacy Policy</a>
-                            </label>
+                        
+                        <div class="mb-3">
+                            <label for="language" class="form-label">{% if is_french %}Langue préférée{% else %}Preferred Language{% endif %}</label>
+                            <select class="form-select" id="language" name="language">
+                                <option value="en">English</option>
+                                <option value="fr">Français</option>
+                            </select>
                         </div>
-
-                        <!-- Avatar Upload -->
-                        <div class="mb-4 text-center">
-                            <label for="id_avatar" class="form-label d-block">Profile Picture (optional)</label>
-                            <div class="position-relative d-inline-block">
-                                <img id="avatarPreview" src="{% static 'images/default-avatar.svg' %}" alt="Avatar Preview" class="rounded-circle mb-2" style="width: 100px; height: 100px; object-fit: cover; border: 2px solid #eee;">
-                                <label for="id_avatar" class="position-absolute bottom-0 end-0 bg-white rounded-circle p-2 shadow-sm" style="cursor: pointer;">
-                                    <i class="fas fa-camera text-primary"></i>
-                                </label>
-                            </div>
-                            {{ form.avatar }}
-                            {% if form.avatar.errors %}
-                            <div class="invalid-feedback d-block">{{ form.avatar.errors }}</div>
-                            {% endif %}
-                        </div>
-
+                        
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Create Account</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus me-2"></i>{% if is_french %}S'inscrire{% else %}Register{% endif %}
+                            </button>
                         </div>
                     </form>
-
+                    
                     <hr class="my-4">
-
+                    
                     <div class="text-center">
-                        <p class="mb-0">Already have an account? <a href="{% url 'login' %}">Login</a></p>
+                        <p class="mb-0">{% if is_french %}Déjà un compte ?{% else %}Already have an account?{% endif %} 
+                            <a href="{% url 'login' %}" class="text-decoration-none">{% if is_french %}Se connecter{% else %}Login{% endif %}</a>
+                        </p>
                     </div>
                 </div>
             </div>

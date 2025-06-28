@@ -1,23 +1,23 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Create Listing - StayBooking{% endblock %}
+{% block title %}{% if is_french %}Créer une annonce - StayBooking{% else %}Create Listing - StayBooking{% endif %}{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-5 pt-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="mb-0">Create New Property Listing</h3>
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus me-2"></i>{% if is_french %}Créer une nouvelle annonce{% else %}Create New Listing{% endif %}
+                    </h4>
                 </div>
                 <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        {{ form.as_p }}
-                        <button type="submit" class="btn btn-primary">Create Listing</button>
-                        <a href="{% url 'dashboard' %}" class="btn btn-secondary ms-2">Cancel</a>
-                    </form>
+                    <p class="text-muted">{% if is_french %}Cette fonctionnalité sera bientôt disponible.{% else %}This feature will be available soon.{% endif %}</p>
+                    <a href="{% url 'dashboard' %}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i>{% if is_french %}Retour au tableau de bord{% else %}Back to Dashboard{% endif %}
+                    </a>
                 </div>
             </div>
         </div>

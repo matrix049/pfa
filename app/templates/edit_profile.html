@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Edit Profile - StayBooking{% endblock %}
+{% block title %}{% if is_french %}Modifier le profil - StayBooking{% else %}Edit Profile - StayBooking{% endif %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -432,8 +433,8 @@
                 <div class="profile-card">
                     <!-- Profile Header -->
                     <div class="profile-header">
-                        <h2><i class="fas fa-user-edit me-2"></i>Edit Profile</h2>
-                        <p>Manage your account settings and preferences</p>
+                        <h2><i class="fas fa-user-edit me-2"></i>{% if is_french %}Modifier le profil{% else %}Edit Profile{% endif %}</h2>
+                        <p>{% trans "Manage your account settings and preferences" %}</p>
                     </div>
 
                     <!-- Avatar Section -->
@@ -483,7 +484,7 @@
 
                             <!-- Personal Information -->
                             <div class="form-section">
-                                <h4><i class="fas fa-user"></i>Personal Information</h4>
+                                <h4><i class="fas fa-user"></i>{% if is_french %}Prénom{% else %}First Name{% endif %}</h4>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="modern-form-group floating-label">
@@ -493,7 +494,7 @@
                                                    value="{{ form.first_name.value|default:'' }}"
                                                    placeholder=" " 
                                                    required>
-                                            <label><i class="fas fa-user"></i>First Name</label>
+                                            <label><i class="fas fa-user"></i>{% if is_french %}Prénom{% else %}First Name{% endif %}</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -504,7 +505,7 @@
                                                    value="{{ form.last_name.value|default:'' }}"
                                                    placeholder=" " 
                                                    required>
-                                            <label><i class="fas fa-user"></i>Last Name</label>
+                                            <label><i class="fas fa-user"></i>{% if is_french %}Nom{% else %}Last Name{% endif %}</label>
                                         </div>
                                     </div>
                                 </div>
@@ -517,7 +518,7 @@
                                                    value="{{ form.email.value|default:'' }}"
                                                    placeholder=" " 
                                                    required>
-                                            <label><i class="fas fa-envelope"></i>Email Address</label>
+                                            <label><i class="fas fa-envelope"></i>{% if is_french %}Email{% else %}Email{% endif %}</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -527,7 +528,7 @@
                                                    class="modern-form-control" 
                                                    value="{{ form.phone_number.value|default:'' }}"
                                                    placeholder=" ">
-                                            <label><i class="fas fa-phone"></i>Phone Number</label>
+                                            <label><i class="fas fa-phone"></i>{% if is_french %}Téléphone{% else %}Phone{% endif %}</label>
                                         </div>
                                     </div>
                                 </div>
@@ -536,26 +537,26 @@
                                            name="date_of_birth" 
                                            class="modern-form-control" 
                                            value="{{ form.date_of_birth.value|default:'' }}">
-                                    <label><i class="fas fa-birthday-cake"></i>Date of Birth</label>
+                                    <label><i class="fas fa-birthday-cake"></i>{% trans "Date of Birth" %}</label>
                                 </div>
                                 <div class="modern-form-group floating-label">
                                     <textarea name="bio" 
                                               class="modern-form-control" 
                                               rows="4" 
                                               placeholder=" ">{{ form.bio.value|default:'' }}</textarea>
-                                    <label><i class="fas fa-quote-left"></i>Bio</label>
+                                    <label><i class="fas fa-quote-left"></i>{% if is_french %}Bio{% else %}Bio{% endif %}</label>
                                 </div>
                             </div>
 
                             <!-- Location Information -->
                             <div class="form-section">
-                                <h4><i class="fas fa-map-marker-alt"></i>Location</h4>
+                                <h4><i class="fas fa-map-marker-alt"></i>{% trans "Location" %}</h4>
                                 <div class="modern-form-group floating-label">
                                     <textarea name="address" 
                                               class="modern-form-control" 
                                               rows="3" 
                                               placeholder=" ">{{ form.address.value|default:'' }}</textarea>
-                                    <label><i class="fas fa-home"></i>Address</label>
+                                    <label><i class="fas fa-home"></i>{% trans "Address" %}</label>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6">
@@ -565,7 +566,7 @@
                                                    class="modern-form-control" 
                                                    value="{{ form.city.value|default:'' }}"
                                                    placeholder=" ">
-                                            <label><i class="fas fa-city"></i>City</label>
+                                            <label><i class="fas fa-city"></i>{% trans "City" %}</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -575,7 +576,7 @@
                                                    class="modern-form-control" 
                                                    value="{{ form.country.value|default:'' }}"
                                                    placeholder=" ">
-                                            <label><i class="fas fa-flag"></i>Country</label>
+                                            <label><i class="fas fa-flag"></i>{% trans "Country" %}</label>
                                         </div>
                                     </div>
                                 </div>
@@ -583,27 +584,23 @@
 
                             <!-- Preferences -->
                             <div class="form-section">
-                                <h4><i class="fas fa-cog"></i>Preferences</h4>
+                                <h4><i class="fas fa-cog"></i>{% if is_french %}Langue{% else %}Language{% endif %}</h4>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="modern-form-group">
                                             <label class="modern-form-label">
-                                                <i class="fas fa-language"></i>Language
+                                                <i class="fas fa-language"></i>{% if is_french %}Langue{% else %}Language{% endif %}
                                             </label>
-                                            <select name="language" class="modern-form-control">
-                                                <option value="English" {% if form.language.value == 'English' %}selected{% endif %}>English</option>
-                                                <option value="French" {% if form.language.value == 'French' %}selected{% endif %}>French</option>
-                                                <option value="Spanish" {% if form.language.value == 'Spanish' %}selected{% endif %}>Spanish</option>
-                                                <option value="Arabic" {% if form.language.value == 'Arabic' %}selected{% endif %}>Arabic</option>
-                                                <option value="German" {% if form.language.value == 'German' %}selected{% endif %}>German</option>
-                                                <option value="Other" {% if form.language.value == 'Other' %}selected{% endif %}>Other</option>
+                                            <select name="language" class="modern-form-control" onchange="changeLanguage(this.value)">
+                                                <option value="en" {% if form.language.value == 'en' or not form.language.value %}selected{% endif %}>English</option>
+                                                <option value="fr" {% if form.language.value == 'fr' %}selected{% endif %}>Français</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="modern-form-group">
                                             <label class="modern-form-label">
-                                                <i class="fas fa-dollar-sign"></i>Currency
+                                                <i class="fas fa-dollar-sign"></i>{% trans "Currency" %}
                                             </label>
                                             <select name="currency" class="modern-form-control">
                                                 <option value="USD" {% if form.currency.value == 'USD' %}selected{% endif %}>USD</option>
@@ -619,15 +616,15 @@
 
                             <!-- Notification Settings -->
                             <div class="form-section">
-                                <h4><i class="fas fa-bell"></i>Notifications</h4>
+                                <h4><i class="fas fa-bell"></i>{% trans "Notifications" %}</h4>
                                 <div class="modern-checkbox">
                                     <input type="checkbox" 
                                            name="email_notifications" 
                                            id="email_notifications"
                                            {% if form.email_notifications.value %}checked{% endif %}>
                                     <label for="email_notifications">
-                                        Email Notifications
-                                        <div class="checkbox-desc">Receive important updates via email</div>
+                                        {% trans "Email Notifications" %}
+                                        <div class="checkbox-desc">{% trans "Receive important updates via email" %}</div>
                                     </label>
                                 </div>
                                 <div class="modern-checkbox">
@@ -636,8 +633,8 @@
                                            id="sms_notifications"
                                            {% if form.sms_notifications.value %}checked{% endif %}>
                                     <label for="sms_notifications">
-                                        SMS Notifications
-                                        <div class="checkbox-desc">Receive booking alerts via SMS</div>
+                                        {% trans "SMS Notifications" %}
+                                        <div class="checkbox-desc">{% trans "Receive booking alerts via SMS" %}</div>
                                     </label>
                                 </div>
                                 <div class="modern-checkbox">
@@ -646,8 +643,8 @@
                                            id="marketing_emails"
                                            {% if form.marketing_emails.value %}checked{% endif %}>
                                     <label for="marketing_emails">
-                                        Marketing Emails
-                                        <div class="checkbox-desc">Receive special offers and promotions</div>
+                                        {% trans "Marketing Emails" %}
+                                        <div class="checkbox-desc">{% trans "Receive special offers and promotions" %}</div>
                                     </label>
                                 </div>
                             </div>
@@ -655,10 +652,10 @@
                             <!-- Form Actions -->
                             <div class="profile-actions">
                                 <button type="submit" class="btn-modern">
-                                    <i class="fas fa-save"></i>Save Changes
+                                    <i class="fas fa-save"></i>{% if is_french %}Sauvegarder{% else %}Save Changes{% endif %}
                                 </button>
                                 <a href="{% url 'dashboard' %}" class="btn-outline-modern">
-                                    <i class="fas fa-times"></i>Cancel
+                                    <i class="fas fa-times"></i>{% if is_french %}Retour{% else %}Back{% endif %}
                                 </a>
                             </div>
                         </form>
@@ -886,6 +883,17 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', function() {
         localStorage.removeItem('profileDraft');
     });
+    
+    // Language change functionality
+    window.changeLanguage = function(language) {
+        // Show loading state
+        const select = document.querySelector('select[name="language"]');
+        const originalValue = select.value;
+        select.disabled = true;
+        
+        // Redirect to language change URL
+        window.location.href = `/change-language/${language}/?next={{ request.path }}`;
+    };
 });
 </script>
 {% endblock %}

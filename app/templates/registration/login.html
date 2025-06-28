@@ -1,58 +1,45 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Login - StayBooking{% endblock %}
+{% block title %}{% if is_french %}Connexion - StayBooking{% else %}Login - StayBooking{% endif %}{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container mt-5 pt-5">
     <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
+        <div class="col-md-6 col-lg-4">
             <div class="card shadow-sm">
-                <div class="card-body p-5">
-                    <h2 class="text-center mb-4">Welcome Back</h2>
-                    
-                    {% if form.errors %}
-                    <div class="alert alert-danger">
-                        Please correct the errors below.
-                    </div>
-                    {% endif %}
-
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-sign-in-alt me-2"></i>{% if is_french %}Connexion{% else %}Login{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
                     <form method="post">
                         {% csrf_token %}
+                        
                         <div class="mb-3">
-                            <label for="id_username" class="form-label">Username or Email</label>
-                            <input type="text" name="username" id="id_username" class="form-control" required autofocus>
-                            {% if form.username.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.username.errors|join:", " }}
-                            </div>
-                            {% endif %}
+                            <label for="username" class="form-label">{% if is_french %}Nom d'utilisateur{% else %}Username{% endif %}</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
                         </div>
-
+                        
                         <div class="mb-3">
-                            <label for="id_password" class="form-label">Password</label>
-                            <input type="password" name="password" id="id_password" class="form-control" required>
-                            {% if form.password.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.password.errors|join:", " }}
-                            </div>
-                            {% endif %}
+                            <label for="password" class="form-label">{% if is_french %}Mot de passe{% else %}Password{% endif %}</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
                         </div>
-
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" name="remember" id="id_remember" class="form-check-input">
-                            <label class="form-check-label" for="id_remember">Remember me</label>
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Login</button>
-                            <a href="{% url 'password_reset' %}" class="btn btn-link">Forgot password?</a>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>{% if is_french %}Se connecter{% else %}Login{% endif %}
+                            </button>
                         </div>
                     </form>
-
+                    
                     <hr class="my-4">
-
+                    
                     <div class="text-center">
-                        <p class="mb-0">Don't have an account? <a href="{% url 'register' %}">Sign up</a></p>
+                        <p class="mb-0">{% if is_french %}Pas encore de compte ?{% else %}Don't have an account?{% endif %} 
+                            <a href="{% url 'register' %}" class="text-decoration-none">{% if is_french %}S'inscrire{% else %}Register{% endif %}</a>
+                        </p>
                     </div>
                 </div>
             </div>

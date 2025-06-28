@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}StayBooking - Find Your Perfect Stay{% endblock %}
+{% block title %}{% if is_french %}StayBooking - Trouvez Votre Séjour Parfait{% else %}StayBooking - Find Your Perfect Stay{% endif %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -319,28 +320,28 @@
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <div class="hero-content text-center">
-                    <h1 class="hero-title">Find Your Perfect Stay</h1>
-                    <p class="hero-subtitle">Discover unique homes and experiences around the world</p>
+                    <h1 class="hero-title">{% if is_french %}Trouvez Votre Séjour Parfait{% else %}Find Your Perfect Stay{% endif %}</h1>
+                    <p class="hero-subtitle">{% if is_french %}Découvrez des logements uniques et des expériences autour du monde{% else %}Discover unique homes and experiences around the world{% endif %}</p>
                     
                     <!-- Glassmorphism Search -->
                     <div class="search-glass">
                         <form action="{% url 'properties' %}" method="get">
                             <div class="row g-3 align-items-end">
                                 <div class="col-md-4">
-                                    <label class="form-label text-white-50 small">WHERE</label>
-                                    <input type="text" name="location" class="form-control search-input" placeholder="Search destinations">
+                                    <label class="form-label text-white-50 small">{% if is_french %}Où{% else %}WHERE{% endif %}</label>
+                                    <input type="text" name="location" class="form-control search-input" placeholder="{% if is_french %}Rechercher des destinations{% else %}Search destinations{% endif %}">
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label text-white-50 small">CHECK IN</label>
+                                    <label class="form-label text-white-50 small">{% if is_french %}Arrivée{% else %}CHECK IN{% endif %}</label>
                                     <input type="date" name="check_in" class="form-control search-input">
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label text-white-50 small">CHECK OUT</label>
+                                    <label class="form-label text-white-50 small">{% if is_french %}Départ{% else %}CHECK OUT{% endif %}</label>
                                     <input type="date" name="check_out" class="form-control search-input">
                                 </div>
                                 <div class="col-md-2">
                                     <button type="submit" class="btn search-btn w-100">
-                                        <i class="fas fa-search me-2"></i>Search
+                                        <i class="fas fa-search me-2"></i>{% if is_french %}Rechercher{% else %}Search{% endif %}
                                     </button>
                                 </div>
                             </div>
@@ -356,8 +357,8 @@
 <section class="py-5">
     <div class="container">
         <div class="animate-on-scroll">
-            <h2 class="section-title">Featured Properties</h2>
-            <p class="section-subtitle">Handpicked properties that offer the best experience</p>
+            <h2 class="section-title">{% if is_french %}Propriétés Sélectionnées{% else %}Featured Properties{% endif %}</h2>
+            <p class="section-subtitle">{% if is_french %}Propriétés sélectionnées qui offrent la meilleure expérience{% else %}Handpicked properties that offer the best experience{% endif %}</p>
         </div>
         
         <div class="row">
@@ -394,7 +395,7 @@
                                 </span>
                                 <span class="text-muted">4.9</span>
                             </div>
-                            <a href="{% url 'property_detail' property.id %}" class="view-btn">View Details</a>
+                            <a href="{% url 'property_detail' property.id %}" class="view-btn">{% if is_french %}Voir les détails{% else %}View Details{% endif %}</a>
                         </div>
                     </div>
                 </div>
@@ -408,8 +409,8 @@
 <section class="features-section">
     <div class="container">
         <div class="animate-on-scroll">
-            <h2 class="section-title">Why Choose StayBooking</h2>
-            <p class="section-subtitle">We provide the best experience for both guests and hosts</p>
+            <h2 class="section-title">{% if is_french %}Pourquoi Choisir StayBooking{% else %}Why Choose StayBooking{% endif %}</h2>
+            <p class="section-subtitle">{% if is_french %}Nous fournissons la meilleure expérience pour les invités et les hôtes{% else %}We provide the best experience for both guests and hosts{% endif %}</p>
         </div>
         
         <div class="row">
@@ -418,8 +419,8 @@
                     <div class="feature-icon">
                         <i class="fas fa-shield-alt"></i>
                     </div>
-                    <h4 class="feature-title">Secure Booking</h4>
-                    <p class="feature-desc">Your safety and security is our top priority. All payments are protected and secure.</p>
+                    <h4 class="feature-title">{% if is_french %}Réservation Sécurisée{% else %}Secure Booking{% endif %}</h4>
+                    <p class="feature-desc">{% if is_french %}Votre sécurité et sécurité sont nos priorités. Tous les paiements sont protégés et sécurisés.{% else %}Your safety and security is our top priority. All payments are protected and secure.{% endif %}</p>
                 </div>
             </div>
             <div class="col-lg-4 col-md-6 mb-4">
@@ -427,8 +428,8 @@
                     <div class="feature-icon">
                         <i class="fas fa-hand-holding-usd"></i>
                     </div>
-                    <h4 class="feature-title">Best Price Guarantee</h4>
-                    <p class="feature-desc">Find the best deals for your stay. We guarantee competitive prices on all properties.</p>
+                    <h4 class="feature-title">{% if is_french %}Meilleure Garantie de Prix{% else %}Best Price Guarantee{% endif %}</h4>
+                    <p class="feature-desc">{% if is_french %}Trouvez les meilleures offres pour votre séjour. Nous garantissons les prix compétitifs sur toutes les propriétés.{% else %}Find the best deals for your stay. We guarantee competitive prices on all properties.{% endif %}</p>
                 </div>
             </div>
             <div class="col-lg-4 col-md-6 mb-4">
@@ -436,8 +437,8 @@
                     <div class="feature-icon">
                         <i class="fas fa-headset"></i>
                     </div>
-                    <h4 class="feature-title">24/7 Support</h4>
-                    <p class="feature-desc">We're here to help anytime you need us. Get support whenever, wherever.</p>
+                    <h4 class="feature-title">{% if is_french %}Support 24/7{% else %}24/7 Support{% endif %}</h4>
+                    <p class="feature-desc">{% if is_french %}Nous sommes là pour vous aider à tout moment où vous en avez besoin. Obtenez du support n'importe quand, n'importe où.{% else %}We're here to help anytime you need us. Get support whenever, wherever.{% endif %}</p>
                 </div>
             </div>
         </div>
