@@ -131,3 +131,16 @@ MEDIA_ROOT = BASE_DIR / 'media'
 STRIPE_PUBLIC_KEY = 'pk_test_TYooMQauvdEDq54NiTphI7jx'  # Replace with your test public key
 STRIPE_SECRET_KEY = 'sk_test_BQokikJOvBiI2HlWgH4olfQ2'  # Replace with your test secret key
 STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', 'whsec_test_webhook_secret')  # Replace with your webhook secret
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your_email@gmail.com'
+EMAIL_HOST_PASSWORD = 'your_app_password'  # Use an app password, not your main password!
+DEFAULT_FROM_EMAIL = 'no-reply@example.com'
+
+# Admins for notifications
+ADMINS = [
+    ('Admin', 'saadelhilali14@gmail.com'),
+]

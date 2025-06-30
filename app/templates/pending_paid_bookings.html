@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pending Paid Bookings{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Pending Paid Bookings</h2>
+    <div class="card shadow">
+        <div class="card-body">
+            {% if bookings %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Property</th>
+                        <th>Guest</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Total Price</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    <tr>
+                        <td>{{ booking.id }}</td>
+                        <td>{{ booking.property_obj.title }}</td>
+                        <td>{{ booking.guest.get_full_name|default:booking.guest.username }}</td>
+                        <td>{{ booking.check_in }}</td>
+                        <td>{{ booking.check_out }}</td>
+                        <td>${{ booking.total_price }}</td>
+                        <td>
+                            <form method="post" action="{% url 'confirm_pending_booking_dashboard' booking.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success btn-sm">Confirm</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="alert alert-info">No pending paid bookings.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

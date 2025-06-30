@@ -1,0 +1,37 @@
+{% extends 'admin/base_site.html' %}
+{% load static %}
+
+{% block content %}
+<h1>Pending Paid Bookings</h1>
+<p>Below are all bookings that are <strong>pending</strong> and <strong>paid</strong>. You can confirm each booking individually.</p>
+<table class="admin-table" style="width:100%; border-collapse:collapse;">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Property</th>
+            <th>Guest</th>
+            <th>Check-in</th>
+            <th>Check-out</th>
+            <th>Total Price</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for booking in bookings %}
+        <tr>
+            <td>{{ booking.id }}</td>
+            <td>{{ booking.property_obj.title }}</td>
+            <td>{{ booking.guest.get_full_name|default:booking.guest.username }}</td>
+            <td>{{ booking.check_in }}</td>
+            <td>{{ booking.check_out }}</td>
+            <td>${{ booking.total_price }}</td>
+            <td>
+                <a href="{% url 'admin:confirm_single_booking' booking.id %}" class="button btn btn-success btn-sm">Confirm</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7">No pending paid bookings.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %} 

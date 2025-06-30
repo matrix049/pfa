@@ -48,5 +48,13 @@ urlpatterns = [
     path('user-admin/bulk-action/', views.bulk_action, name='bulk_action'),
     path('wishlist/add/<int:property_id>/', views.add_to_wishlist, name='add_to_wishlist'),
     path('wishlist/remove/<int:property_id>/', views.remove_from_wishlist, name='remove_from_wishlist'),
+    path('wishlist/', views.wishlist_page, name='wishlist_page'),
     path('change-language/<str:language_code>/', views.change_language, name='change_language'),
+    path('admin-dashboard/pending-paid-bookings/', views.pending_paid_bookings_dashboard, name='pending_paid_bookings_dashboard'),
+    path('admin-dashboard/pending-paid-bookings/confirm/<int:booking_id>/', views.confirm_pending_booking_dashboard, name='confirm_pending_booking_dashboard'),
+    path('booking/<int:booking_id>/', views.booking_detail, name='booking_detail'),
+    path('booking/<int:booking_id>/comment/', views.add_comment, name='add_comment'),
+    path('comment/<int:comment_id>/delete/', views.delete_comment, name='delete_comment'),
+    path('property/<int:property_id>/comment/', views.add_property_comment, name='add_property_comment'),
+    path('property-comment/<int:comment_id>/delete/', views.delete_property_comment, name='delete_property_comment'),
 ]

@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.db import transaction
 from django.utils.translation import activate, gettext as _
 from django.conf import settings
-from .models import Property, PropertyImage, Booking, Review, UserProfile, HostApplication, Post, Wishlist
+from .models import Property, PropertyImage, Booking, Review, UserProfile, HostApplication, Post, Wishlist, Comment, PropertyComment
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.validators import validate_email
@@ -22,6 +22,8 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 import json
 from django.contrib.auth.backends import ModelBackend
+from django.contrib.admin.views.decorators import staff_member_required
+from django.core.mail import send_mail
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -115,6 +117,18 @@ def property_detail(request, pk):
         Property.objects.prefetch_related('images', 'amenities', 'reviews', 'host__userprofile'),
         pk=pk
     )
+    
+    # Get property comments
+    property_comments = property.property_comments.all()
+    
+    # Check if current user can comment (has completed booking and hasn't commented yet)
+    can_comment = False
+    if request.user.is_authenticated:
+        has_stayed = Booking.objects.filter(
+            property_obj=property,
+            guest=request.user,
+            status='completed'
+        ).exists()
     return render(request, 'property_detail.html', {
         'property': property,
         'today': timezone.now().date(),
@@ -143,6 +157,11 @@ def dashboard(request):
     if request.user.userprofile.role == 'admin':
         pending_applications = HostApplication.objects.filter(status='pending')
     
+    # Get all bookings for admin
+    all_bookings = []
+    if request.user.userprofile.role == 'admin':
+        all_bookings = Booking.objects.all().order_by('-created_at')
+    
     return render(request, 'dashboard.html', {
         'bookings': user_bookings,
         'properties': user_properties,
@@ -151,6 +170,7 @@ def dashboard(request):
         'host_application': host_application,
         'managed_properties': managed_properties,
         'pending_applications': pending_applications,
+        'all_bookings': all_bookings,
         'user_role': request.user.userprofile.role,
     })
 
@@ -201,7 +221,7 @@ def create_booking(request, pk):
             
             # Create a temporary booking to hold the slot
             temp_booking = Booking.objects.create(
-                property=property,
+                property_obj=property,
                 guest=request.user,
                 check_in=check_in_date,
                 check_out=check_out_date,
@@ -273,7 +293,7 @@ def booking_success(request):
                 return redirect('dashboard')
             
             # Update booking status
-            booking.status = 'confirmed'
+            booking.status = 'pending'  # Admin must confirm
             booking.payment_status = 'paid'
             booking.save()
             
@@ -615,6 +635,27 @@ def become_host(request):
                 profile = request.user.userprofile
                 profile.role = 'pending_host'
                 profile.save()
+                
+                # Send email notification to admin(s)
+                admin_emails = [email for name, email in getattr(settings, 'ADMINS', [])]
+                if not admin_emails:
+                    admin_emails = [getattr(settings, 'DEFAULT_FROM_EMAIL', 'admin@example.com')]
+                send_mail(
+                    subject='New Host Application Submitted',
+                    message=f'User {request.user.username} has submitted a new host application.\n\nBusiness Name: {business_name}\nBusiness Address: {business_address}\nBusiness Phone: {business_phone}\nDescription: {description}',
+                    from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@example.com'),
+                    recipient_list=admin_emails,
+                    fail_silently=True,
+                )
+                
+                # Send email notification to user (approved)
+                send_mail(
+                    subject='Your Host Application Has Been Approved',
+                    message=f'Congratulations {request.user.get_full_name() or request.user.username},\n\nYour host application has been approved! You can now list properties and start hosting on StayBooking.\n\nThank you for joining us!',
+                    from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@example.com'),
+                    recipient_list=[request.user.email],
+                    fail_silently=True,
+                )
                 
                 messages.success(request, 'Your host application has been submitted successfully! We will review it and get back to you soon.')
                 return redirect('dashboard')
@@ -960,7 +1001,7 @@ def handle_checkout_session_completed(event):
     
     try:
         with transaction.atomic():
-            booking = Booking.objects.get(id=booking_id)
+            booking = get_object_or_404(Booking, id=booking_id)
             
             # Verify the booking is still available
             if not Booking.check_availability(booking.property_obj, booking.check_in, booking.check_out, exclude_booking=booking):
@@ -972,7 +1013,7 @@ def handle_checkout_session_completed(event):
                 return JsonResponse({'status': 'booking_cancelled'})
             
             # Update booking status
-            booking.status = 'confirmed'
+            booking.status = 'pending'  # Admin must confirm
             booking.payment_status = 'paid'
             booking.save()
             
@@ -1014,7 +1055,7 @@ def handle_payment_intent_succeeded(event):
                     logger.warning(f"Booking {booking.id} cancelled due to availability conflict")
                     return JsonResponse({'status': 'booking_cancelled'})
                 
-                booking.status = 'confirmed'
+                booking.status = 'pending'  # Admin must confirm
                 booking.payment_status = 'paid'
                 booking.save()
                 
@@ -1080,6 +1121,15 @@ def approve_host_application(request, application_id):
             profile.role = 'host'
             profile.save()
             
+            # Send email notification to user (approved)
+            send_mail(
+                subject='Your Host Application Has Been Approved',
+                message=f'Congratulations {application.user.get_full_name() or application.user.username},\n\nYour host application has been approved! You can now list properties and start hosting on StayBooking.\n\nThank you for joining us!',
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@example.com'),
+                recipient_list=[application.user.email],
+                fail_silently=True,
+            )
+            
             messages.success(request, f'Host application for {application.user.username} has been approved.')
             
             # Return JSON response for AJAX requests
@@ -1122,6 +1172,15 @@ def reject_host_application(request, application_id):
                 profile.role = 'user'
                 profile.save()
             
+            # Send email notification to user (rejected)
+            send_mail(
+                subject='Your Host Application Has Been Rejected',
+                message=f'Dear {application.user.get_full_name() or application.user.username},\n\nWe regret to inform you that your host application has been rejected. If you have questions or wish to reapply, please contact support.\n\nThank you for your interest in StayBooking.',
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@example.com'),
+                recipient_list=[application.user.email],
+                fail_silently=True,
+            )
+            
             messages.success(request, f'Host application for {application.user.username} has been rejected.')
             
             # Return JSON response for AJAX requests
@@ -1145,3 +1204,152 @@ def reject_host_application(request, application_id):
                 }, status=400)
     
     return redirect('dashboard')
+
+@login_required
+@user_passes_test(lambda u: u.userprofile.role == 'admin')
+def pending_paid_bookings_dashboard(request):
+    bookings = Booking.objects.filter(status='pending', payment_status='paid')
+    return render(request, 'pending_paid_bookings.html', {'bookings': bookings})
+
+@login_required
+@user_passes_test(lambda u: u.userprofile.role == 'admin')
+@require_POST
+def confirm_pending_booking_dashboard(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id, status='pending', payment_status='paid')
+    booking.status = 'confirmed'
+    booking.save()
+    # Send confirmation email
+    send_mail(
+        subject='Your booking is confirmed!',
+        message=f'Dear {booking.guest.get_full_name() or booking.guest.username},\n\nYour booking for {booking.property_obj.title} from {booking.check_in} to {booking.check_out} has been confirmed by the admin.\n\nThank you for booking with us!',
+        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@example.com'),
+        recipient_list=[booking.guest.email],
+        fail_silently=True,
+    )
+    return redirect('pending_paid_bookings_dashboard')
+
+@login_required
+def add_comment(request, booking_id):
+    """Add a comment to a booking"""
+    booking = get_object_or_404(Booking, id=booking_id)
+    
+    # Check if user can comment on this booking - only the guest who booked
+    if request.user != booking.guest:
+        messages.error(request, 'You do not have permission to comment on this booking.')
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        content = request.POST.get('content', '').strip()
+        if content:
+            Comment.objects.create(
+                booking=booking,
+                user=request.user,
+                content=content,
+                is_admin_comment=False
+            )
+            messages.success(request, 'Comment added successfully!')
+        else:
+            messages.error(request, 'Comment cannot be empty.')
+    
+    return redirect('booking_detail', booking_id=booking_id)
+
+@login_required
+def booking_detail(request, booking_id):
+    """View booking details with comments"""
+    booking = get_object_or_404(Booking, id=booking_id)
+    
+    # Check if user can view this booking
+    if not (request.user == booking.guest or request.user.userprofile.role == 'admin'):
+        messages.error(request, 'You do not have permission to view this booking.')
+        return redirect('dashboard')
+    
+    comments = booking.comments.all()
+    
+    return render(request, 'booking_detail.html', {
+        'booking': booking,
+        'comments': comments,
+        'can_comment': request.user == booking.guest
+    })
+
+@login_required
+def delete_comment(request, comment_id):
+    """Delete a comment (only by comment author or admin)"""
+    comment = get_object_or_404(Comment, id=comment_id)
+    
+    # Check if user can delete this comment
+    if not (request.user == comment.user or request.user.userprofile.role == 'admin'):
+        messages.error(request, 'You do not have permission to delete this comment.')
+        return redirect('booking_detail', booking_id=comment.booking.id)
+    
+    if request.method == 'POST':
+        booking_id = comment.booking.id
+        comment.delete()
+        messages.success(request, 'Comment deleted successfully!')
+        return redirect('booking_detail', booking_id=booking_id)
+    
+    return redirect('booking_detail', booking_id=comment.booking.id)
+
+@login_required
+def add_property_comment(request, property_id):
+    """Add a comment to a property (only if user has stayed there)"""
+    property = get_object_or_404(Property, id=property_id)
+    
+    # Check if user has stayed at this property (has a completed booking)
+    has_stayed = Booking.objects.filter(
+        property_obj=property,
+        guest=request.user,
+        status='completed'
+    ).exists()
+    
+    if not has_stayed:
+        messages.error(request, 'You can only comment on properties you have stayed at.')
+        return redirect('property_detail', pk=property_id)
+    
+    # Check if user already commented on this property
+    existing_comment = PropertyComment.objects.filter(property=property, user=request.user).first()
+    if existing_comment:
+        messages.error(request, 'You have already commented on this property.')
+        return redirect('property_detail', pk=property_id)
+    
+    if request.method == 'POST':
+        content = request.POST.get('content', '').strip()
+        rating = int(request.POST.get('rating', 5))
+        
+        if content:
+            PropertyComment.objects.create(
+                property=property,
+                user=request.user,
+                content=content,
+                rating=rating
+            )
+            messages.success(request, 'Comment added successfully!')
+        else:
+            messages.error(request, 'Comment cannot be empty.')
+    
+    return redirect('property_detail', pk=property_id)
+
+@login_required
+def delete_property_comment(request, comment_id):
+    """Delete a property comment (only by comment author or admin)"""
+    comment = get_object_or_404(PropertyComment, id=comment_id)
+    
+    # Check if user can delete this comment
+    if not (request.user == comment.user or request.user.userprofile.role == 'admin'):
+        messages.error(request, 'You do not have permission to delete this comment.')
+        return redirect('property_detail', pk=comment.property.id)
+    
+    if request.method == 'POST':
+        property_id = comment.property.id
+        comment.delete()
+        messages.success(request, 'Comment deleted successfully!')
+        return redirect('property_detail', pk=property_id)
+    
+    return redirect('property_detail', pk=comment.property.id)
+
+@login_required
+def wishlist_page(request):
+    wishlist_properties = Property.objects.filter(wishlisted_by__user=request.user)
+    return render(request, 'wishlist.html', {
+        'wishlist_properties': wishlist_properties,
+        'is_french': getattr(request, 'LANGUAGE_CODE', 'en') == 'fr',
+    })

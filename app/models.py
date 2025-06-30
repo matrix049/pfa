@@ -327,3 +327,32 @@ class Post(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+class Comment(models.Model):
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='booking_comments')
+    content = models.TextField()
+    is_admin_comment = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Comment by {self.user.username} on booking {self.booking.id}"
+
+    class Meta:
+        ordering = ['created_at']
+
+class PropertyComment(models.Model):
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='property_comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='property_comments')
+    content = models.TextField()
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)], default=5)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Comment by {self.user.username} on {self.property.title}"
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ['property', 'user']  # One comment per user per property

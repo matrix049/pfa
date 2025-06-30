@@ -453,6 +453,16 @@
                     {% endif %}
                     {% if user_role == 'admin' %}
                     <li>
+                        <a href="{% url 'pending_paid_bookings_dashboard' %}" class="nav-link-modern">
+                            <i class="fas fa-money-check-alt"></i>{% if is_french %}Réservations Payées en Attente{% else %}Pending Paid Bookings{% endif %}
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#all_bookings" class="nav-link-modern" data-bs-toggle="list">
+                            <i class="fas fa-list"></i>{% if is_french %}Toutes les Réservations{% else %}All Bookings{% endif %}
+                        </a>
+                    </li>
+                    <li>
                         <a href="{% url 'manage_users' %}" class="nav-link-modern">
                             <i class="fas fa-users"></i>{% if is_french %}Gérer les Utilisateurs{% else %}Manage Users{% endif %}
                         </a>
@@ -540,6 +550,12 @@
                                                     {{ booking.status|title }}
                                                 </span>
                                             </div>
+                                            {% if booking.status == 'pending' and booking.payment_status == 'paid' %}
+                                            <div class="alert-modern alert-info-modern mb-2">
+                                                <i class="fas fa-hourglass-half me-2"></i>
+                                                {% if is_french %}Votre paiement a été reçu. En attente de confirmation de l'administrateur.{% else %}Your payment has been received. Waiting for admin confirmation.{% endif %}
+                                            </div>
+                                            {% endif %}
                                             <p class="mb-1"><strong>Check-in:</strong> {{ booking.check_in|date:"M d, Y" }}</p>
                                             <p class="mb-1"><strong>Check-out:</strong> {{ booking.check_out|date:"M d, Y" }}</p>
                                             <p class="mb-1"><strong>Guests:</strong> {{ booking.guests }}</p>
@@ -547,6 +563,9 @@
                                         </div>
                                         {% if booking.status == 'pending' or booking.status == 'confirmed' %}
                                         <div class="card-footer bg-transparent">
+                                            <a href="{% url 'booking_detail' booking.id %}" class="btn btn-outline-primary btn-sm me-2">
+                                                <i class="fas fa-eye me-2"></i>{% if is_french %}Voir les Détails{% else %}View Details{% endif %}
+                                            </a>
                                             <form method="post" action="{% url 'cancel_booking' booking.pk %}" class="d-inline">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn-outline-danger btn-sm">
@@ -790,6 +809,63 @@
                             {% else %}
                             <div class="alert-modern alert-info-modern text-center">
                                 <i class="fas fa-info-circle me-2"></i>{% if is_french %}Pas de demandes d'hôte en attente.{% else %}No pending host applications.{% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- All Bookings Tab (Admin Only) -->
+                {% if user_role == 'admin' %}
+                <div class="tab-pane fade" id="all_bookings">
+                    <div class="content-card">
+                        <div class="content-header">
+                            <h3><i class="fas fa-list me-2"></i>{% if is_french %}Toutes les Réservations{% else %}All Bookings{% endif %}</h3>
+                        </div>
+                        <div class="content-body">
+                            {% if all_bookings %}
+                            <div class="row">
+                                {% for booking in all_bookings %}
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ booking.property_obj.title }}</h5>
+                                            <p class="text-muted mb-2">
+                                                <i class="fas fa-hashtag me-2"></i>Booking ID: {{ booking.id }}
+                                            </p>
+                                            <p class="text-muted mb-2">
+                                                <i class="fas fa-user me-2"></i>{{ booking.guest.get_full_name|default:booking.guest.username }}
+                                            </p>
+                                            <p class="text-muted mb-2">
+                                                <i class="fas fa-map-marker-alt me-2"></i>{{ booking.property_obj.location }}
+                                            </p>
+                                            <div class="mb-3">
+                                                <span class="badge-modern {% if booking.status == 'confirmed' %}badge-success-modern{% elif booking.status == 'pending' %}badge-warning-modern{% else %}badge-danger-modern{% endif %}">
+                                                    {{ booking.status|title }}
+                                                </span>
+                                                <span class="badge-modern {% if booking.payment_status == 'paid' %}badge-success-modern{% else %}badge-warning-modern{% endif %} ms-2">
+                                                    {{ booking.payment_status|title }}
+                                                </span>
+                                            </div>
+                                            <p class="mb-1"><strong>Check-in:</strong> {{ booking.check_in|date:"M d, Y" }}</p>
+                                            <p class="mb-1"><strong>Check-out:</strong> {{ booking.check_out|date:"M d, Y" }}</p>
+                                            <p class="mb-1"><strong>Guests:</strong> {{ booking.guests }}</p>
+                                            <p class="mb-0"><strong>Total:</strong> ${{ booking.total_price }}</p>
+                                            <p class="mb-0"><strong>Comments:</strong> {{ booking.comments.count }}</p>
+                                        </div>
+                                        <div class="card-footer bg-transparent">
+                                            <a href="{% url 'booking_detail' booking.id %}" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye me-2"></i>{% if is_french %}Voir les Détails{% else %}View Details{% endif %}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="alert-modern alert-info-modern text-center">
+                                <i class="fas fa-info-circle me-2"></i>{% if is_french %}Aucune réservation trouvée.{% else %}No bookings found.{% endif %}
                             </div>
                             {% endif %}
                         </div>

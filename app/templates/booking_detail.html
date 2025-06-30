@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Booking Details - {{ booking.property_obj.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Booking Details -->
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-calendar-check me-2"></i>Booking Details
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>{{ booking.property_obj.title }}</h5>
+                            <p class="text-muted">
+                                <i class="fas fa-map-marker-alt me-2"></i>{{ booking.property_obj.location }}
+                            </p>
+                            <p><strong>Check-in:</strong> {{ booking.check_in|date:"M d, Y" }}</p>
+                            <p><strong>Check-out:</strong> {{ booking.check_out|date:"M d, Y" }}</p>
+                            <p><strong>Guests:</strong> {{ booking.guests }}</p>
+                            <p><strong>Total Price:</strong> ${{ booking.total_price }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <span class="badge {% if booking.status == 'confirmed' %}bg-success{% elif booking.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %} fs-6">
+                                    {{ booking.status|title }}
+                                </span>
+                            </div>
+                            <p><strong>Payment Status:</strong> {{ booking.payment_status|title }}</p>
+                            <p><strong>Booked on:</strong> {{ booking.created_at|date:"M d, Y H:i" }}</p>
+                            {% if booking.status == 'pending' and booking.payment_status == 'paid' %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-hourglass-half me-2"></i>
+                                Your payment has been received. Waiting for admin confirmation.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="card shadow">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-comments me-2"></i>Comments
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if comments %}
+                        {% for comment in comments %}
+                        <div class="comment mb-3 p-3 border rounded {% if comment.is_admin_comment %}bg-light{% endif %}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>{{ comment.user.get_full_name|default:comment.user.username }}</strong>
+                                    {% if comment.is_admin_comment %}
+                                        <span class="badge bg-primary ms-2">Admin</span>
+                                    {% endif %}
+                                    <small class="text-muted ms-2">{{ comment.created_at|date:"M d, Y H:i" }}</small>
+                                </div>
+                                {% if user == comment.user or user.userprofile.role == 'admin' %}
+                                <form method="post" action="{% url 'delete_comment' comment.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this comment?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                            <p class="mt-2 mb-0">{{ comment.content }}</p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No comments yet.</p>
+                    {% endif %}
+
+                    <!-- Add Comment Form -->
+                    {% if can_comment %}
+                    <div class="mt-4">
+                        <h5>Add a Comment</h5>
+                        <form method="post" action="{% url 'add_comment' booking.id %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <textarea name="content" class="form-control" rows="3" placeholder="Write your comment here..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Post Comment
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-primary w-100 mb-2">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                    {% if booking.status == 'pending' or booking.status == 'confirmed' %}
+                    <form method="post" action="{% url 'cancel_booking' booking.id %}" class="d-inline w-100">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Are you sure you want to cancel this booking?')">
+                            <i class="fas fa-times me-2"></i>Cancel Booking
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

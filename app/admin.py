@@ -6,6 +6,8 @@ from datetime import timedelta
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+from django.core.mail import send_mail
+from django.conf import settings
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
@@ -159,6 +161,14 @@ class BookingAdmin(admin.ModelAdmin):
         'mark_as_paid_manual'
     ]
     
+    change_list_template = 'admin/app/booking/change_list.html'
+    
+    def changelist_view(self, request, extra_context=None):
+        if extra_context is None:
+            extra_context = {}
+        extra_context['show_pending_paid_link'] = True
+        return super().changelist_view(request, extra_context=extra_context)
+    
     def reservation_expires_at_display(self, obj):
         """Display reservation expiry time"""
         if obj.status == 'pending':
@@ -171,12 +181,21 @@ class BookingAdmin(admin.ModelAdmin):
     
     def confirm_pending_bookings(self, request, queryset):
         """Manually confirm pending bookings"""
-        updated = queryset.filter(status='pending').update(
-            status='confirmed',
-            payment_status='paid'
-        )
-        self.message_user(request, f'Successfully confirmed {updated} pending bookings.')
-    confirm_pending_bookings.short_description = "Confirm selected pending bookings"
+        to_confirm = queryset.filter(status='pending', payment_status='paid')
+        updated = 0
+        for booking in to_confirm:
+            booking.status = 'confirmed'
+            booking.save()
+            # Send confirmation email
+            send_mail(
+                subject='Your booking is confirmed!',
+                message=f'Dear {booking.guest.get_full_name() or booking.guest.username},\n\nYour booking for {booking.property_obj.title} from {booking.check_in} to {booking.check_out} has been confirmed by the admin.\n\nThank you for booking with us!',
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@example.com'),
+                recipient_list=[booking.guest.email],
+                fail_silently=True,
+            )
+            updated += 1
+        self.message_user(request, f'Successfully confirmed {updated} paid pending bookings and sent confirmation emails.')
     
     def cancel_pending_bookings(self, request, queryset):
         """Cancel pending bookings"""
